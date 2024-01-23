@@ -1,4 +1,5 @@
 function render_questions(raw) {
+  console.log(raw);
   const data = raw.text_content;
   const answers = data.map((page) => getAnswersV2(page));
   const questions = data.map((page) => getQuestionsV2(page));
@@ -21,7 +22,7 @@ function render_questions(raw) {
   return { filteredQuestions };
 }
 
-const LOCAL_ENV = false;
+const LOCAL_ENV = true;
 const PYTHON_APP_BASE_URL = LOCAL_ENV
   ? "http://127.0.0.1:5000"
   : "http://ec2-54-179-34-103.ap-southeast-1.compute.amazonaws.com:5000";
@@ -44,8 +45,12 @@ function fetchDataFromPDF() {
   // Show loading bar
   document.getElementById("loadingBar").classList.remove("d-none");
   uploadFile().then((res) => {
-    const response = render_questions(res);
-    uploadFinish(response);
+    let combineAllFileResponse = [];
+    res?.files?.map((item) => {
+      const response = render_questions(item);
+      combineAllFileResponse.push(response);
+    });
+    uploadFinish(combineAllFileResponse);
     // generateQuiz(res.text_content);
   });
 }
@@ -57,19 +62,21 @@ function uploadFinish(result) {
   const resultArea = document.getElementById("resultArea");
   const quizResult = document.getElementById("quiz-result");
   resultArea.classList.add("alert", "alert-success");
-  const questions = result.filteredQuestions;
+  const questions = result;
   //   const questions = JSON.parse(result).filteredQuestions;
-  resultArea.innerHTML = `<strong>Success!</strong> Quiz generated successfully with ${questions.length} questions.`;
+  resultArea.innerHTML = `<strong>Success!</strong> Quiz generated successfully with ${questions.length} files.`;
   quizResult.innerHTML = "";
-  questions.forEach((question, index) => {
-    const singleQuestion = `
+  questions?.map((singleFile, i) => {
+    singleFile?.filteredQuestions?.forEach((question, index) => {
+      const singleQuestion = `
           <div class="card p-2 mb-4">
           <h6>${index + 1}- ${question.direction}</h6>
           <h4>Q: ${question.question}</h4>
           <h4 >A: ${question.answer.join(",")}</h4>
           </div>
           `;
-    quizResult.innerHTML += singleQuestion;
+      quizResult.innerHTML += singleQuestion;
+    });
   });
 }
 
@@ -96,15 +103,23 @@ async function generateQuiz(data) {
 
 async function uploadFile() {
   return new Promise(async (resolve, reject) => {
+    // const inputFile = document.getElementById("pdfFile");
+    // const selectedFile = inputFile.files[0];
+    // var formdata = new FormData();
+    // formdata.append(
+    //   "file",
+    //   selectedFile,
+    //   "PV L11.1 who which in with (RTK55) (Answers).pdf"
+    // );
     const inputFile = document.getElementById("pdfFile");
-    const selectedFile = inputFile.files[0];
+    const selectedFiles = inputFile.files;
     var formdata = new FormData();
-    formdata.append(
-      "file",
-      selectedFile,
-      "PV L11.1 who which in with (RTK55) (Answers).pdf"
-    );
 
+    for (let i = 0; i < selectedFiles.length; i++) {
+      const file = selectedFiles[i];
+      // Append each file with a unique key, for example, "file_0", "file_1", etc.
+      formdata.append(`files`, file, file.name);
+    }
     var requestOptions = {
       method: "POST",
       body: formdata,
