@@ -54,7 +54,7 @@ const isFillInTheBlanksDirection = (input) => {
   const regexEn =
     /(?:Fill\s*in\s*the\s*blank?|Fill\s*up\s*the\s*blank?|Fill\s*in\s*the\s*horizontal\s*line?|Complete\s*the\s*following?|Complete\s*the\s*sentences?|Insert\s*the\s*correct\s*words?|Insert\s*the?|Choose\s*the\s*right\s*words?|Choose\s*the?|Add\s*the\s*necessary\s*information?|Add\s*the\s*missing?|Add\s*the\s*correct?|Supply\s*the\s*missing\s*words?)(?:.*)/i;
   const regexCn =
-    /(?:填空|填寫空白|填寫橫線|完成下列|完成句子|插入正確的詞語|插入|選擇正確的詞語|選擇|添加必要的信息|添加缺失的|添加正確的|補充缺失的詞語|填在橫線上|選詞填充|選擇適當的詞語|選擇適當的答案|填在____上|填寫在空白格上|填上適當的答案|填上適當的詞語|填在_____上|填在空白線上|回答以下問題|回答問題|在_____上填寫答案|在_____填寫正確答案|在_____填寫適當的答案|在_____填寫適當答案|運用提供的字詞|運用提供的詞語|完成問題|完成答案|上填上適)[\u4e00-\u9fa5]*(?:.*)/i;
+    /(?:填空|填充|填寫空白|填寫橫線|完成下列|完成句子|插入正確的詞語|插入|選擇正確的詞語|選擇|添加必要的信息|添加缺失的|添加正確的|補充缺失的詞語|填在橫線上|選詞填充|選擇適當的詞語|選擇適當的答案|填在____上|填寫在空白格上|填上適當的答案|填上適當的詞語|填在_____上|填在空白線上|回答以下問題|回答問題|在_____上填寫答案|在_____填寫正確答案|在_____填寫適當的答案|在_____填寫適當答案|運用提供的字詞|運用提供的詞語|完成問題|完成答案|上填上適)[\u4e00-\u9fa5]*(?:.*)/i;
 
   return regexCn.test(input) || regexEn.test(input);
 };

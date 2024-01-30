@@ -1,5 +1,5 @@
 const getAnswersV2 = (data) => {
-  const answers = data.filter((item) => isRedColor(item.color.toUpperCase()));
+  const answers = data.filter((item) => isRedShade(item.color.toUpperCase()));
   return answers;
 };
 
@@ -41,6 +41,23 @@ const groupLinesByYaxis = (data) => {
     };
   });
   return merged;
+};
+
+const reArrangeYValues = (page) => {
+  // Function to check if two numbers are within a certain threshold
+  const isClose = (num1, num2, threshold = 1) =>
+    Math.abs(num1 - num2) <= threshold;
+
+  // Iterate over the array starting from the second element
+  for (let i = 1; i < page.length; i++) {
+    // Check if the difference between current and previous y values is within the threshold
+    if (isClose(page[i].y, page[i - 1].y)) {
+      // Update the y value of the current object to match the previous one
+      page[i].y = page[i - 1].y;
+    }
+  }
+
+  return page;
 };
 
 const mergeWordsForSameLine = (data) => {
@@ -112,14 +129,16 @@ const mergeSameLine = (data) => {
   const mergedArray = [];
   let currentText = "";
   let currentAnswer = [];
-  data.forEach((item) => {
+  data.forEach((item, index) => {
     // Concatenate the "text" values until it ends with a period ('.')
     currentText += item.text;
     currentAnswer = currentAnswer.concat(item.answer || []);
     if (
       item.text.trim().endsWith(".") ||
       item.text.trim().endsWith(")") ||
-      item.text.trim().endsWith("?")
+      item.text.trim().endsWith("。") ||
+      item.text.trim().endsWith("?") ||
+      startsWithRomanNumeral(data[index + 1]?.text.trim())
     ) {
       // If the current "text" ends with a period, push it to the merged array
       mergedArray.push({
@@ -135,6 +154,12 @@ const mergeSameLine = (data) => {
   return mergedArray;
 };
 
+const startsWithRomanNumeral = (str) => {
+  // Regular expression to match Roman numerals, letters, or numbers followed by a dot
+  const regex = /^(?:(?:[ivxlcdm]+|[a-zA-Z]+|\d+)\.\s*)/i;
+  return regex.test(str);
+};
+
 const isRedColor = (color) => {
   // Assuming color is in the format #RRGGBB
   // Extract the red component (first two characters) and convert to decimal
@@ -143,6 +168,20 @@ const isRedColor = (color) => {
   // Check if redComponent is greater than a threshold (adjust as needed)
   return redComponent > 128; // Adjust threshold as needed
 };
+
+function isRedShade(hexColor) {
+  // Remove the # symbol if present
+  hexColor = hexColor.replace("#", "");
+
+  // Convert the hexadecimal color code to RGB
+  const r = parseInt(hexColor.substring(0, 2), 16);
+  const g = parseInt(hexColor.substring(2, 4), 16);
+  const b = parseInt(hexColor.substring(4, 6), 16);
+
+  // Check if the color is a shade of red
+  // You can adjust the threshold values based on your preference
+  return r > 150 && g < 100 && b < 100;
+}
 
 const getDirections = (data) => {
   const directions = data
@@ -156,7 +195,7 @@ const getDirections = (data) => {
   return directions;
 };
 
-const addAnswersToEachQuestion = (questions, answers) => {
+const addAnswersToEachQuestion = (questions, answers, pageNum) => {
   return questions.map((question, index) => {
     const maxY = parseFloat(question.y) + ANSWER_TOLLERANCE;
     const minY = parseFloat(question.y) - ANSWER_TOLLERANCE;
@@ -168,7 +207,7 @@ const addAnswersToEachQuestion = (questions, answers) => {
           question.page === answer.page
       )
       .map((answer) => answer.text);
-    return { ...question, answer: filteredAnswers };
+    return { ...question, answer: filteredAnswers, page: pageNum + 1 };
   });
 };
 
@@ -188,14 +227,31 @@ const mergeAllPages = (pages) => {
     mergedSets.push(...set);
   });
   return mergedSets.map((question) => {
-    const { text, answer, direction } = question;
+    const { text, answer, direction, page } = question;
     return {
       direction,
       text,
       answer,
+      page,
     };
   });
 };
+
+function groupByPage(data) {
+  const groupedDataArray = Object.values(
+    data.reduce((result, current) => {
+      // Check if a group for the current page exists
+      if (!result[current.page]) {
+        // If not, create a new group
+        result[current.page] = [];
+      }
+      // Add the current object to the group
+      result[current.page].push(current);
+      return result;
+    }, {})
+  );
+  return groupedDataArray;
+}
 
 const removeUnwanted = (data) => {
   return data.map((questionSet) =>
@@ -211,6 +267,7 @@ const removeWithoutAnswers = (data) => {
         direction: data.direction.replace(/^[0-9A-Za-z]+\./, "").trim(),
         question: data.text.replace(/^[0-9A-Za-z]+\./, "").trim(),
         answer: data.answer.map((answer) => answer.trim()),
+        page: data.page,
       };
     });
 };
