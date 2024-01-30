@@ -29,7 +29,7 @@ function render_questions(raw) {
   return groupByPage(filteredQuestions);
 }
 
-const LOCAL_ENV = false;
+const LOCAL_ENV = true;
 const PYTHON_APP_BASE_URL = LOCAL_ENV
   ? "http://127.0.0.1:5000"
   : "https://ai.edhub.school";
@@ -113,6 +113,11 @@ async function uploadFile() {
     var formdata = new FormData();
     formdata.append("files", inputFiles.files[0], inputFiles.files[0].name);
 
+    for (let i = 0; i < selectedFiles.length; i++) {
+      const file = selectedFiles[i];
+      // Append each file with a unique key, for example, "file_0", "file_1", etc.
+      formdata.append(`files`, file, file.name);
+    }
     var requestOptions = {
       method: "POST",
       body: formdata,
