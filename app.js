@@ -6,11 +6,11 @@ function render_questions(raw) {
   const questions = data.map((page) => getQuestionsV2(page));
   const organizedQuestions = questions
     .map((page) => reArrangeYValues(page))
-    .map((page) => groupLinesByYaxis(page));
+    .map((page) => groupLinesByYaxis(page))
+    .map((page) => mergeSameLine(page));
   // Directions set
   const mergedQuestions = organizedQuestions.map((page) => mergeSameLine(page));
   const directions = organizedQuestions.map((page) => getDirections(page));
-
   const directionIndexes = directions.map((page) => getDirectionIndexes(page));
   const questionsWithAnswers = organizedQuestions.map((questions, index) =>
     addAnswersToEachQuestion(questions, answers[index], index)
@@ -29,7 +29,7 @@ function render_questions(raw) {
   return groupByPage(filteredQuestions);
 }
 
-const LOCAL_ENV = true;
+const LOCAL_ENV = false;
 const PYTHON_APP_BASE_URL = LOCAL_ENV
   ? "http://127.0.0.1:5000"
   : "https://ai.edhub.school";
@@ -53,7 +53,6 @@ function fetchDataFromPDF() {
   document.getElementById("loadingBar").classList.remove("d-none");
   uploadFile().then((res) => {
     const response = render_questions(res);
-    console.log(response);
     response.forEach((res) => uploadFinish(res));
 
     // generateQuiz(res.text_content);
@@ -109,12 +108,12 @@ async function generateQuiz(data) {
 async function uploadFile() {
   return new Promise(async (resolve, reject) => {
     const inputFiles = document.getElementById("pdfFile");
-    // const selectedFile = inputFile.files[0];
+    const selectedFile = inputFiles.files;
     var formdata = new FormData();
-    formdata.append("files", inputFiles.files[0], inputFiles.files[0].name);
+    // formdata.append("files", inputFiles.files[0], inputFiles.files[0].name);
 
-    for (let i = 0; i < selectedFiles.length; i++) {
-      const file = selectedFiles[i];
+    for (let i = 0; i < selectedFile?.length; i++) {
+      const file = selectedFile[i];
       // Append each file with a unique key, for example, "file_0", "file_1", etc.
       formdata.append(`files`, file, file.name);
     }
