@@ -28,7 +28,7 @@ function render_questions(raw) {
     identityBoxedanswers(page)
   );
   const filteredQuestions = removeWithoutAnswers(
-    mergeSameLine(mergeAllPages(filterQuestions(questionsSets)))
+    mergeSameLine(mergeAllPages(filterQuestions(filteredQuestions)))
   );
   console.log(questionSetsWithBoxedAnswers);
   return groupByPage(filteredQuestions);
