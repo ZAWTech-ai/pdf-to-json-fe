@@ -292,12 +292,12 @@ const identifyBoxedAnswers = (set) => {
   console.log(answers);
   let boxedAnswers = "";
 
-  answers.forEach((answer) => {
+  shuffleArray(answers).forEach((answer) => {
     if (set[0].rawBoxedAnswers.includes(answer)) {
       boxedAnswers += answer + ", ";
     }
   });
-  return shuffleArray(boxedAnswers);
+  return boxedAnswers;
 };
 
 function shuffleArray(array) {
