@@ -5,7 +5,7 @@ const getAnswersV2 = (data) => {
 
 const getQuestionsV2 = (data) => {
   const questions = data.map((item) => {
-    if (isRedColor(item.color.toUpperCase())) {
+    if (isRedShade(item.color.toUpperCase())) {
       return {
         ...item,
         y: item.y.toFixed(1),
@@ -157,7 +157,8 @@ const mergeSameLine = (data) => {
 const startsWithRomanNumeral = (str) => {
   // Regular expression to match Roman numerals, letters, or numbers followed by a dot
   const regex = /^(?:(?:[ivxlcdm]+|[a-zA-Z]+|\d+)\.\s*)/i;
-  return regex.test(str);
+  const regex2 = /^(?:(?:[ivxlcdm]+|[a-zA-Z]+|\d+)\s*)/i;
+  return regex.test(str) || regex2.test(str);
 };
 
 const isRedColor = (color) => {
@@ -270,4 +271,31 @@ const removeWithoutAnswers = (data) => {
         page: data.page,
       };
     });
+};
+
+const identityBoxedanswers = (questionsSet) => {
+  return questionsSet.map((set) => {
+    return set.map((single) => {
+      return {
+        ...single,
+        boxedAnswers: identifyBoxedAnswers(set),
+      };
+    });
+  });
+};
+
+const identifyBoxedAnswers = (set) => {
+  const answers = [];
+  set.forEach(({ answer }) => {
+    answers.push(...answer);
+  });
+  console.log(answers);
+  let boxedAnswers = "";
+
+  answers.forEach((answer) => {
+    if (set[0].rawBoxedAnswers.includes(answer)) {
+      boxedAnswers += answer + ", ";
+    }
+  });
+  return boxedAnswers;
 };

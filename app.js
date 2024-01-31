@@ -23,9 +23,14 @@ function render_questions(raw) {
       directionIndexes[index]
     )
   );
+  // Function to identity keywords enclosed in box
+  const questionSetsWithBoxedAnswers = questionsSets.map((page) =>
+    identityBoxedanswers(page)
+  );
   const filteredQuestions = removeWithoutAnswers(
     mergeSameLine(mergeAllPages(filterQuestions(questionsSets)))
   );
+  console.log(questionSetsWithBoxedAnswers);
   return groupByPage(filteredQuestions);
 }
 
@@ -60,6 +65,7 @@ function fetchDataFromPDF() {
 }
 
 const quizResult = document.getElementById("quiz-result");
+let questionsLength = 0;
 function uploadFinish(result) {
   document.getElementById("loadingBar").classList.add("d-none");
 
@@ -68,7 +74,8 @@ function uploadFinish(result) {
   resultArea.classList.add("alert", "alert-success");
   const questions = result;
   //   const questions = JSON.parse(result).filteredQuestions;
-  resultArea.innerHTML = `<strong>Success!</strong> Quiz generated successfully with ${questions.length} questions.`;
+  questionsLength += questions.length;
+  resultArea.innerHTML = `<strong>Success!</strong> Quiz generated successfully with ${questionsLength} questions.`;
   let innerHTML = `<div class="card p-2 mb-4">`;
   questions.forEach((question, index) => {
     const singleQuestion = `
