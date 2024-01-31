@@ -278,7 +278,7 @@ const identityBoxedanswers = (questionsSet) => {
     return set.map((single) => {
       return {
         ...single,
-        boxedAnswers: identifyBoxedAnswers(set),
+        direction: `${single.direction} - ${identifyBoxedAnswers(set)}`,
       };
     });
   });
