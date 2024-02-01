@@ -289,12 +289,11 @@ const identifyBoxedAnswers = (set) => {
   set.forEach(({ answer }) => {
     answers.push(...answer);
   });
-  console.log(answers);
   let boxedAnswers = "";
-
-  shuffleArray(answers).forEach((answer) => {
+  const answerSet = new Set(shuffleArray(answers));
+  answerSet.forEach((answer) => {
     if (set[0].rawBoxedAnswers.includes(answer)) {
-      boxedAnswers += answer + ", ";
+      boxedAnswers += answer + ",";
     }
   });
   return boxedAnswers;

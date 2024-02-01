@@ -5,9 +5,12 @@ function render_questions(raw) {
   // Questions Set
   const questions = data.map((page) => getQuestionsV2(page));
   const organizedQuestions = questions
-    .map((page) => reArrangeYValues(page))
     .map((page) => groupLinesByYaxis(page))
     .map((page) => mergeSameLine(page));
+  // const organizedQuestions = questions
+  //   .map((page) => reArrangeYValues(page))
+  //   .map((page) => groupLinesByYaxis(page))
+  //   .map((page) => mergeSameLine(page));
   // Directions set
   const mergedQuestions = organizedQuestions.map((page) => mergeSameLine(page));
   const directions = organizedQuestions.map((page) => getDirections(page));
@@ -30,7 +33,7 @@ function render_questions(raw) {
   const filteredQuestions = removeWithoutAnswers(
     mergeSameLine(mergeAllPages(filterQuestions(questionSetsWithBoxedAnswers)))
   );
-  console.log(filteredQuestions);
+  console.log(questionsSets);
   return groupByPage(filteredQuestions);
 }
 
