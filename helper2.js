@@ -45,7 +45,7 @@ const groupLinesByYaxis = (data) => {
 
 const reArrangeYValues = (page) => {
   // Function to check if two numbers are within a certain threshold
-  const isClose = (num1, num2, threshold = 1) =>
+  const isClose = (num1, num2, threshold = 3) =>
     Math.abs(num1 - num2) <= threshold;
 
   // Iterate over the array starting from the second element
@@ -53,7 +53,7 @@ const reArrangeYValues = (page) => {
     // Check if the difference between current and previous y values is within the threshold
     if (isClose(page[i].y, page[i - 1].y)) {
       // Update the y value of the current object to match the previous one
-      page[i].y = page[i - 1].y;
+      page[i-1].y = page[i].y;
     }
   }
 

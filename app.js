@@ -30,13 +30,24 @@ function render_questions(raw) {
   const questionSetsWithBoxedAnswers = questionsSets.map((page) =>
     identityBoxedanswers(page)
   );
+  console.log(questionsSets, answers, data);
   const filteredQuestions = removeWithoutAnswers(
     mergeSameLine(mergeAllPages(filterQuestions(questionSetsWithBoxedAnswers)))
   );
-  console.log(questionsSets);
-  return groupByPage(filteredQuestions);
+  const removeEmptyQuestions = filteredQuestions?.filter((item) => {
+    const isNotOnlyUnderscores = !isQuestion(item);
+    return isNotOnlyUnderscores;
+  });
+  return groupByPage(removeEmptyQuestions);
 }
-
+const isQuestion = (item) => {
+  if (item?.question && typeof item.question === "string") {
+    // Regular expression to match only underscores
+    var regex = /^_+$/;
+    return regex.test(item.question.trim()); // Trim whitespace before testing
+  }
+  return false;
+};
 const LOCAL_ENV = false;
 const PYTHON_APP_BASE_URL = LOCAL_ENV
   ? "http://127.0.0.1:5000"
