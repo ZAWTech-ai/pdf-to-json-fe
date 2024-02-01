@@ -4,16 +4,17 @@ function render_questions(raw) {
   const answers = data.map((page) => getAnswersV2(page));
   // Questions Set
   const questions = data.map((page) => getQuestionsV2(page));
+  const directions = questions.map((page) => getDirections(page));
   const organizedQuestions = questions
-    .map((page) => groupLinesByYaxis(page))
-    .map((page) => mergeSameLine(page));
+  .map((page) => groupLinesByYaxis(page))
+  .map((page) => mergeSameLine(page));
   // const organizedQuestions = questions
   //   .map((page) => reArrangeYValues(page))
   //   .map((page) => groupLinesByYaxis(page))
   //   .map((page) => mergeSameLine(page));
+  console.log(directions);
   // Directions set
   const mergedQuestions = organizedQuestions.map((page) => mergeSameLine(page));
-  const directions = organizedQuestions.map((page) => getDirections(page));
   const directionIndexes = directions.map((page) => getDirectionIndexes(page));
   const questionsWithAnswers = organizedQuestions.map((questions, index) =>
     addAnswersToEachQuestion(questions, answers[index], index)
@@ -30,7 +31,7 @@ function render_questions(raw) {
   const questionSetsWithBoxedAnswers = questionsSets.map((page) =>
     identityBoxedanswers(page)
   );
-  console.log(questionsSets, answers, data);
+  
   const filteredQuestions = removeWithoutAnswers(
     mergeSameLine(mergeAllPages(filterQuestions(questionSetsWithBoxedAnswers)))
   );
