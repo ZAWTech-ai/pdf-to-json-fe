@@ -135,11 +135,11 @@ const mergeSameLine = (data) => {
     currentText += item.text;
     currentAnswer = currentAnswer.concat(item.answer || []);
     if (
-      item.text.trim().endsWith(".") ||
-      item.text.trim().endsWith(")") ||
-      item.text.trim().endsWith("。") ||
-      item.text.trim().endsWith("?") ||
-      startsWithRomanNumeral(data[index + 1]?.text.trim())
+      item?.text?.trim()?.endsWith(".") ||
+      item?.text?.trim()?.endsWith(")") ||
+      item?.text?.trim()?.endsWith("。") ||
+      item?.text?.trim()?.endsWith("?") ||
+      startsWithRomanNumeral(data[index + 1]?.text?.trim())
     ) {
       // If the current "text" ends with a period, push it to the merged array
       mergedArray.push({
@@ -299,7 +299,9 @@ const identityBoxedanswers = (questionsSet) => {
 const identifyBoxedAnswers = (set) => {
   const answers = [];
   set.forEach(({ answer }) => {
-    answers.push(...answer);
+    if(answer){
+      answers?.push(...answer);
+    }
   });
   let boxedAnswers = "";
   const answerSet = new Set(shuffleArray(answers));
