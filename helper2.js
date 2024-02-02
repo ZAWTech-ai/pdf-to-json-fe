@@ -23,15 +23,14 @@ const groupLinesByYaxis = (data) => {
   const groupedByY = {};
   data.forEach((item) => {
     const { y } = item;
-
+    const yIndex = parseFloat(y).toFixed(0);
     // Check if the 'y' value is already a key in the dictionary
-    if (groupedByY[y]) {
-      groupedByY[y].push(item);
+    if (groupedByY[yIndex]) {
+      groupedByY[yIndex].push(item);
     } else {
-      groupedByY[y] = [item];
+      groupedByY[yIndex] = [item];
     }
   });
-
   const sorted = Object.values(groupedByY).map((group) => {
     return group.sort((a, b) => a.x - b.x);
   });
@@ -299,7 +298,7 @@ const identityBoxedanswers = (questionsSet) => {
 const identifyBoxedAnswers = (set) => {
   const answers = [];
   set.forEach(({ answer }) => {
-    if(answer){
+    if (answer) {
       answers?.push(...answer);
     }
   });

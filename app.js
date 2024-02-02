@@ -7,7 +7,7 @@ function render_questions(raw) {
   const questions = data.map((page) => getQuestionsV2(page));
   // Merge each line to create a complete sentence
   const organizedQuestions = questions
-    .map((page) => reArrangeYValues(page))
+    // .map((page) => reArrangeYValues(page))
     .map((page) => groupLinesByYaxis(page))
     .map((page) => mergeSameLine(page));
   // Get line that starts with Number, Roman or Alphabet to consider it as a question
@@ -27,7 +27,7 @@ function render_questions(raw) {
   const questionsWithDirections = questionsWithAnswers
     .map((page, index) => addDirectionsToEachQuestion(page, directions[index]))
     .map((page) => removeWithoutAnswers(page));
-  console.log(questionsWithDirections);
+
   return questionsWithDirections;
   // Identity keywords enclosed in box
   // const questionSetsWithBoxedAnswers = questionsSets.map((page) =>
