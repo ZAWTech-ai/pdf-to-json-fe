@@ -4,15 +4,16 @@ const getAnswersV2 = (data) => {
 };
 
 const getQuestionsV2 = (data) => {
-  const questions = data.map((item) => {
+  const questions = data.map((item, index) => {
     if (isRedShade(item.color.toUpperCase())) {
       return {
         ...item,
         y: item.y.toFixed(1),
         text: "_____",
+        index,
       };
     } else {
-      return { ...item, y: item.y.toFixed(1) };
+      return { ...item, y: item.y.toFixed(1), index };
     }
   });
   return questions;
@@ -53,7 +54,7 @@ const reArrangeYValues = (page) => {
     // Check if the difference between current and previous y values is within the threshold
     if (isClose(page[i].y, page[i - 1].y)) {
       // Update the y value of the current object to match the previous one
-      page[i-1].y = page[i].y;
+      page[i - 1].y = page[i].y;
     }
   }
 
@@ -159,6 +160,17 @@ const startsWithRomanNumeral = (str) => {
   const regex = /^(?:(?:[ivxlcdm]+|[a-zA-Z]+|\d+)\.\s*)/i;
   const regex2 = /^(?:(?:[ivxlcdm]+|[a-zA-Z]+|\d+)\s*)/i;
   return regex.test(str) || regex2.test(str);
+};
+
+const getNumberedList = (data) => {
+  const questions = data
+    .map((item) => {
+      return {
+        ...item,
+      };
+    })
+    .filter((item) => startsWithRomanNumeral(item.text));
+  return questions;
 };
 
 const isRedColor = (color) => {
@@ -305,4 +317,33 @@ function shuffleArray(array) {
     [array[i], array[j]] = [array[j], array[i]];
   }
   return array;
+}
+
+function addDirectionsToEachQuestion(questions, directions) {
+  const questionsWithDirections = [];
+  directions.forEach((direction, index) => {
+    questions.forEach((question) => {
+      if (index < directions.length - 1) {
+        if (
+          question.index > direction.index &&
+          question.index < directions[index + 1].index
+        ) {
+          questionsWithDirections.push({
+            ...question,
+            question: question.text,
+            direction: direction.text,
+          });
+        }
+      } else {
+        if (question.index > direction.index) {
+          questionsWithDirections.push({
+            ...question,
+            question: question.text,
+            direction: direction.text,
+          });
+        }
+      }
+    });
+  });
+  return questionsWithDirections;
 }
