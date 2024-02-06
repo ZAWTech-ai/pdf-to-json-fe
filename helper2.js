@@ -142,7 +142,7 @@ const mergeSameLine = (data) => {
     ) {
       // If the current "text" ends with a period, push it to the merged array
       mergedArray.push({
-        ...item,
+        ...data[index - 1],
         text: currentText.trim(),
         answer: currentAnswer,
       });
@@ -156,9 +156,9 @@ const mergeSameLine = (data) => {
 
 const startsWithRomanNumeral = (str) => {
   // Regular expression to match Roman numerals, letters, or numbers followed by a dot
-  const regex = /^(?:(?:[ivxlcdm]+|[a-zA-Z]+|\d+)\.\s*)/i;
-  const regex2 = /^(?:(?:[ivxlcdm]+|[a-zA-Z]+|\d+)\s*)/i;
-  return regex.test(str) || regex2.test(str);
+  const regex = /^(?:(?:[ivxlcdm]+|[a-zA-Z]+|\d+)\.\s)/i;
+  // const regex2 = /^(?:(?:[ivxlcdm]+|[a-zA-Z]+|\d+)\s*)/i;
+  return regex.test(str);
 };
 
 const getNumberedList = (data) => {
