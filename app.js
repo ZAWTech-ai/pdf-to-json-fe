@@ -15,7 +15,7 @@ function render_questions(raw) {
   const finalQuestions = organizedQuestions.map((page) =>
     getNumberedList(page)
   );
-console.log(finalQuestions);
+console.log(finalQuestions,answers);
   // Get Directions by using regex
   const directions = organizedQuestions.map((page) => getDirections(page));
   const directionIndexes = directions.map((page) => getDirectionIndexes(page));
