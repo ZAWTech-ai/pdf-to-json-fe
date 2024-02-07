@@ -126,40 +126,40 @@ const mergeWordsForSameLine = (data) => {
 };
 
 const mergeSameLine = (data) => {
-  console.log(data);
   const mergedArray = [];
   let currentText = "";
   let currentAnswer = [];
+  let currentY = [];
   data.forEach((item, index) => {
-    
     if (/^_+$/.test(item?.text.trim())) {
       return;
     }
     // Concatenate the "text" values until it ends with a period ('.')
-    currentText += item.text;
+    currentText += " " + item.text;
+    currentY.push(item.y);
     currentAnswer = currentAnswer.concat(item.answer || []);
     if (
       item?.text?.trim()?.endsWith(".") ||
       item?.text?.trim()?.endsWith("?") ||
       item?.text?.trim()?.endsWith(")") ||
-      item?.text?.trim()?.endsWith("。")||
-      startsWithRomanNumeral(data[index + 1]?.text?.trim()) 
+      item?.text?.trim()?.endsWith("。") ||
+      startsWithRomanNumeral(data[index + 1]?.text?.trim())
     ) {
       // If the current "text" ends with a period, push it to the merged array
       mergedArray.push({
         ...data[index - 1],
         text: currentText.trim(),
         answer: currentAnswer,
+        y: currentY,
       });
+
       // Reset currentText for the next iteration
       currentText = "";
       currentAnswer = [];
+      currentY = [];
     }
   });
   return mergedArray;
-};
-const mergeTwoline = (data) => {
-  console.log(data);
 };
 const startsWithRomanNumeral = (str) => {
   // Regular expression to match Roman numerals, letters, or numbers followed by a dot
@@ -215,19 +215,36 @@ const getDirections = (data) => {
 };
 
 const addAnswersToEachQuestion = (questions, answers, pageNum) => {
-  return questions.map((question, index) => {
-    const maxY = parseFloat(question.y) + ANSWER_TOLLERANCE;
-    const minY = parseFloat(question.y) - ANSWER_TOLLERANCE;
-    const filteredAnswers = answers
-      .filter(
-        (answer) =>
-          (Math.trunc(question.y) === Math.trunc(answer.y) ||
-            (answer.y > minY && answer.y < maxY)) &&
-          question.page === answer.page
-      )
-      .map((answer) => answer.text);
+  const filteredQuestions = questions.map((question, index) => {
+    const filteredAnswers = getFilteredAnswers(question, answers);
     return { ...question, answer: filteredAnswers, page: pageNum + 1 };
   });
+
+  return filteredQuestions;
+};
+
+const getFilteredAnswers = (question, answers) => {
+  if (Array.isArray(question.y)) {
+    return question.y.flatMap((yValue) =>
+      filterAnswersForY(question, answers, yValue)
+    );
+  } else {
+    return filterAnswersForY(question, answers, question.y);
+  }
+};
+
+const filterAnswersForY = (question, answers, yValue) => {
+  const maxY = parseFloat(yValue) + ANSWER_TOLLERANCE;
+  const minY = parseFloat(yValue) - ANSWER_TOLLERANCE;
+
+  return answers
+    .filter(
+      (answer) =>
+        (Math.trunc(yValue) === Math.trunc(answer.y) ||
+          (answer.y > minY && answer.y < maxY)) &&
+        question.page === answer.page
+    )
+    .map((answer) => answer.text);
 };
 
 const filterQuestions = (data) => {
