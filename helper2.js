@@ -130,15 +130,18 @@ const mergeSameLine = (data) => {
   let currentText = "";
   let currentAnswer = [];
   data.forEach((item, index) => {
+    if (/^_+$/.test(item?.text.trim)) {
+      return;
+    }
     // Concatenate the "text" values until it ends with a period ('.')
     currentText += item.text;
     currentAnswer = currentAnswer.concat(item.answer || []);
     if (
-      startsWithRomanNumeral(data[index + 1]?.text?.trim())||
+      startsWithRomanNumeral(data[index + 1]?.text?.trim()) ||
       item?.text?.trim()?.endsWith(".") ||
       item?.text?.trim()?.endsWith("?") ||
       item?.text?.trim()?.endsWith(")") ||
-      item?.text?.trim()?.endsWith("。") 
+      item?.text?.trim()?.endsWith("。")
     ) {
       // If the current "text" ends with a period, push it to the merged array
       mergedArray.push({
