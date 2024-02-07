@@ -126,11 +126,13 @@ const mergeWordsForSameLine = (data) => {
 };
 
 const mergeSameLine = (data) => {
+  console.log(data);
   const mergedArray = [];
   let currentText = "";
   let currentAnswer = [];
   data.forEach((item, index) => {
-    if (/^_+$/.test(item?.text.trim)) {
+    
+    if (/^_+$/.test(item?.text.trim())) {
       return;
     }
     // Concatenate the "text" values until it ends with a period ('.')

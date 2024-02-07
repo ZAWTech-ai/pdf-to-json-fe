@@ -10,11 +10,12 @@ function render_questions(raw) {
     // .map((page) => reArrangeYValues(page))
     .map((page) => groupLinesByYaxis(page))
     .map((page) => mergeSameLine(page));
+    console.log(organizedQuestions);
   // Get line that starts with Number, Roman or Alphabet to consider it as a question
   const finalQuestions = organizedQuestions.map((page) =>
     getNumberedList(page)
   );
-
+console.log(finalQuestions);
   // Get Directions by using regex
   const directions = organizedQuestions.map((page) => getDirections(page));
   const directionIndexes = directions.map((page) => getDirectionIndexes(page));
