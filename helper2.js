@@ -61,6 +61,7 @@ const reArrangeYValues = (page) => {
 };
 
 const mergeWordsForSameLine = (data) => {
+  console.log(data);
   const mergedData = data.reduce((accumulator, currentItem) => {
     const existingItem = accumulator.find(
       (item) =>
@@ -163,7 +164,8 @@ const mergeSameLine = (data) => {
 };
 const startsWithRomanNumeral = (str) => {
   // Regular expression to match Roman numerals, letters, or numbers followed by a dot
-  const regex = /^(?:(?:[ivxlcdm]+|[a-zA-Z]+|\d+)\.\s*)/i;
+  // const regex = /^(?:(?:[ivxlcdm]+|[a-zA-Z]+|\d+)\.\s*)/i;
+  const regex = /^\s*(\d+\.|i{1,3}\.|[ivxlcdm]+\.)/i;
   // const regex2 = /^(?:(?:[ivxlcdm]+|[a-zA-Z]+|\d+)\s*)/i;
   return regex.test(str);
 };
