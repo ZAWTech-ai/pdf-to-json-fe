@@ -134,11 +134,11 @@ const mergeSameLine = (data) => {
     currentText += item.text;
     currentAnswer = currentAnswer.concat(item.answer || []);
     if (
+      startsWithRomanNumeral(data[index + 1]?.text?.trim())||
       item?.text?.trim()?.endsWith(".") ||
-      item?.text?.trim()?.endsWith(")") ||
-      item?.text?.trim()?.endsWith("。") ||
       item?.text?.trim()?.endsWith("?") ||
-      startsWithRomanNumeral(data[index + 1]?.text?.trim())
+      item?.text?.trim()?.endsWith(")") ||
+      item?.text?.trim()?.endsWith("。") 
     ) {
       // If the current "text" ends with a period, push it to the merged array
       mergedArray.push({
@@ -153,7 +153,9 @@ const mergeSameLine = (data) => {
   });
   return mergedArray;
 };
-
+const mergeTwoline = (data) => {
+  console.log(data);
+};
 const startsWithRomanNumeral = (str) => {
   // Regular expression to match Roman numerals, letters, or numbers followed by a dot
   const regex = /^(?:(?:[ivxlcdm]+|[a-zA-Z]+|\d+)\.\s)/i;

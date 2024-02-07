@@ -10,7 +10,11 @@ function render_questions(raw) {
     // .map((page) => reArrangeYValues(page))
     .map((page) => groupLinesByYaxis(page))
     .map((page) => mergeSameLine(page));
-  console.log(organizedQuestions);
+
+  const mergeTwolines = organizedQuestions
+    // .map((page) => reArrangeYValues(page))
+    .map((page) => mergeTwoline(page));
+
   // Get line that starts with Number, Roman or Alphabet to consider it as a question
   const finalQuestions = organizedQuestions.map((page) =>
     getNumberedList(page)
