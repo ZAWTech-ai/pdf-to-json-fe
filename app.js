@@ -2,7 +2,7 @@ function render_questions(raw) {
   const data = raw.files[0].text_content;
   // Get answers on the basis of red color shade
   const answers = data.map((page) => getAnswersV2(page));
-
+console.log(data);
   // Replacing answer in the data with ________
   const questions = data.map((page) => getQuestionsV2(page));
   // Merge each line to create a complete sentence
@@ -19,7 +19,7 @@ function render_questions(raw) {
   const questionSetsWithBoxedAnswers = getBoxedAnswer?.map((item, index) =>
     identifyBoxedAnswersNew(item, answers[index])
   );
-  console.log(questionSetsWithBoxedAnswers);
+  console.log(organizedQuestions);
   // Get Directions by using regex
   const directions = organizedQuestions.map((page) => getDirections(page));
   console.log(directions);
@@ -127,25 +127,25 @@ const identifyBoxedAnswersNew = (boxAnswer, pageAnswers) => {
 
 function concatBoxAnswerWithDriection(questions, boxAnswer) {
   // Extract answer texts from boxAnswer
-  let answerTexts = boxAnswer.map((box) => box.text.split(" "));
+  let answerTexts = boxAnswer.map((box) => new Set(box.text.split(" ")));
 
   // Iterate over questions
   let concatenatedQuestions = questions.map(question => {
       let { answer, direction } = question;
 
       // Check if any answer matches with any text from boxAnswer
-      let matchedText = "";
+      let matchedTextSet = new Set(); // Using a Set to remove duplicates
       for (let ans of answer) {
-          for (let textArr of answerTexts) {
-              if (textArr.includes(ans)) {
-                  matchedText += textArr.join(" ") + " ";
+          for (let textSet of answerTexts) {
+              if (textSet.has(ans)) {
+                  textSet.forEach(word => matchedTextSet.add(word));
                   break;
               }
           }
       }
 
       // Concatenate direction text and matched text
-      let concatenated = direction + " " + matchedText.trim();
+      let concatenated = direction + " " + [...matchedTextSet].join(" ").trim();
       
       // Add the concatenated text to the question object
       return {
@@ -156,6 +156,7 @@ function concatBoxAnswerWithDriection(questions, boxAnswer) {
 
   return concatenatedQuestions;
 }
+
 
 const isQuestion = (item) => {
   if (item?.question && typeof item.question === "string") {
