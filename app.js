@@ -10,24 +10,37 @@ function render_questions(raw) {
     // .map((page) => reArrangeYValues(page))
     .map((page) => groupLinesByYaxis(page))
     .map((page) => mergeSameLine(page));
-    console.log(organizedQuestions);
+  const nonNumeral = organizedQuestions?.map((page) => getNonNumberList(page));
+  const getBoxedAnswer = nonNumeral;
   // Get line that starts with Number, Roman or Alphabet to consider it as a question
   const finalQuestions = organizedQuestions.map((page) =>
     getNumberedList(page)
   );
+  const questionSetsWithBoxedAnswers = getBoxedAnswer?.map((item, index) =>
+    identifyBoxedAnswersNew(item, answers[index])
+  );
+  console.log(questionSetsWithBoxedAnswers);
   // Get Directions by using regex
   const directions = organizedQuestions.map((page) => getDirections(page));
+  console.log(directions);
   const directionIndexes = directions.map((page) => getDirectionIndexes(page));
 
   // Adding answers to each question based on Y axis
   const questionsWithAnswers = finalQuestions.map((questions, index) =>
     addAnswersToEachQuestion(questions, answers[index], index)
   );
+
   const questionsWithDirections = questionsWithAnswers
     .map((page, index) => addDirectionsToEachQuestion(page, directions[index]))
     .map((page) => removeWithoutAnswers(page));
-
-  return questionsWithDirections;
+  const concatBoxAnswer = questionsWithDirections?.map((item, index) =>
+    concatBoxAnswerWithDriection(
+      item,
+      questionSetsWithBoxedAnswers[index] || []
+    )
+  );
+  console.log(concatBoxAnswer);
+  return concatBoxAnswer;
   // Identity keywords enclosed in box
   // const questionSetsWithBoxedAnswers = questionsSets.map((page) =>
   //   identityBoxedanswers(page)
@@ -86,6 +99,63 @@ function render_questions(raw) {
 //   });
 //   return groupByPage(removeEmptyQuestions);
 // }
+const identifyBoxedAnswersNew = (boxAnswer, pageAnswers) => {
+  // Initialize an object to store matching objects grouped by boxIndex
+  let groupedAnswers = {};
+
+  // Iterate through each object in pageAnswers
+  pageAnswers.forEach((pageAnswer) => {
+    // Iterate through each box in boxAnswer
+    boxAnswer.forEach((box, index) => {
+      // Check if the text of the current pageAnswer is included in any text of boxAnswer
+      if (box.text.includes(pageAnswer.text)) {
+        // If included, push the current pageAnswer to the matchingAnswers array
+        if (!groupedAnswers[index]) {
+          groupedAnswers[index] = { ...pageAnswer, boxIndex: index };
+        } else {
+          groupedAnswers[index].text += " " + pageAnswer.text;
+        }
+      }
+    });
+  });
+
+  // Convert the grouped answers object into an array
+  const matchingAnswers = Object.values(groupedAnswers);
+
+  return matchingAnswers;
+};
+
+function concatBoxAnswerWithDriection(questions, boxAnswer) {
+  // Extract answer texts from boxAnswer
+  let answerTexts = boxAnswer.map((box) => box.text.split(" "));
+
+  // Iterate over questions
+  let concatenatedQuestions = questions.map(question => {
+      let { answer, direction } = question;
+
+      // Check if any answer matches with any text from boxAnswer
+      let matchedText = "";
+      for (let ans of answer) {
+          for (let textArr of answerTexts) {
+              if (textArr.includes(ans)) {
+                  matchedText += textArr.join(" ") + " ";
+                  break;
+              }
+          }
+      }
+
+      // Concatenate direction text and matched text
+      let concatenated = direction + " " + matchedText.trim();
+      
+      // Add the concatenated text to the question object
+      return {
+          ...question,
+          direction: concatenated
+      };
+  });
+
+  return concatenatedQuestions;
+}
 
 const isQuestion = (item) => {
   if (item?.question && typeof item.question === "string") {

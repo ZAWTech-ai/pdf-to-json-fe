@@ -61,7 +61,6 @@ const reArrangeYValues = (page) => {
 };
 
 const mergeWordsForSameLine = (data) => {
-  console.log(data);
   const mergedData = data.reduce((accumulator, currentItem) => {
     const existingItem = accumulator.find(
       (item) =>
@@ -165,7 +164,8 @@ const mergeSameLine = (data) => {
 const startsWithRomanNumeral = (str) => {
   // Regular expression to match Roman numerals, letters, or numbers followed by a dot
   // const regex = /^(?:(?:[ivxlcdm]+|[a-zA-Z]+|\d+)\.\s*)/i;
-  const regex = /^\s*(\d+\.|i{1,3}\.|[ivxlcdm]+\.)/i;
+  // const regex = /^\s*(\d+\.|i{1,3}\.|[ivxlcdm]+\.)/i;
+  const regex = /^\s*(\d+|[ivxlcdm]+)\s*\./i;
   // const regex2 = /^(?:(?:[ivxlcdm]+|[a-zA-Z]+|\d+)\s*)/i;
   return regex.test(str);
 };
@@ -180,7 +180,24 @@ const getNumberedList = (data) => {
     .filter((item) => startsWithRomanNumeral(item.text));
   return questions;
 };
-
+const getNonNumberList = (data) => {
+  const questions = data
+    .map((item) => {
+      return {
+        ...item,
+      };
+    })
+    .filter((item) => startsWithnonNumeral(item.text));
+  return questions;
+};
+const startsWithnonNumeral = (str) => {
+  // Regular expression to match Roman numerals, letters, or numbers followed by a dot
+  // const regex = /^(?:(?:[ivxlcdm]+|[a-zA-Z]+|\d+)\.\s*)/i;
+  // const regex = /^\s*(\d+\.|i{1,3}\.|[ivxlcdm]+\.)/i;
+  const regex = /^\s*(\d+|[ivxlcdm]+)\s*\./i;
+  // const regex2 = /^(?:(?:[ivxlcdm]+|[a-zA-Z]+|\d+)\s*)/i;
+  return !regex.test(str);
+};
 const isRedColor = (color) => {
   // Assuming color is in the format #RRGGBB
   // Extract the red component (first two characters) and convert to decimal
@@ -306,6 +323,7 @@ const removeWithoutAnswers = (data) => {
         question: data.text.replace(/^[0-9A-Za-z]+\./, "").trim(),
         answer: data.answer.map((answer) => answer.trim()),
         page: data.page,
+        y: data.y,
       };
     });
 };
