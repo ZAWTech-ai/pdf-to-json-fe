@@ -2,9 +2,10 @@ function render_questions(raw) {
   const data = raw.files[0].text_content;
   // Get answers on the basis of red color shade
   const answers = data.map((page) => getAnswersV2(page));
-console.log(data);
+  console.log(data);
   // Replacing answer in the data with ________
   const questions = data.map((page) => getQuestionsV2(page));
+  console.log(questions);
   // Merge each line to create a complete sentence
   const organizedQuestions = questions
     // .map((page) => reArrangeYValues(page))
@@ -34,138 +35,50 @@ console.log(data);
     .map((page, index) => addDirectionsToEachQuestion(page, directions[index]))
     .map((page) => removeWithoutAnswers(page));
   const concatBoxAnswer = questionsWithDirections?.map((item, index) =>
-    concatBoxAnswerWithDriection(
+    concatBoxAnswerWithDirection(
       item,
       questionSetsWithBoxedAnswers[index] || []
     )
   );
-  console.log(concatBoxAnswer);
+
   return concatBoxAnswer;
-  // Identity keywords enclosed in box
-  // const questionSetsWithBoxedAnswers = questionsSets.map((page) =>
-  //   identityBoxedanswers(page)
-  // );
-  // console.log(questionsWithDirections);
-
-  // console.log(questionSetsWithBoxedAnswers);
-  // const filteredQuestions = removeWithoutAnswers(
-  //   mergeSameLine(mergeAllPages(filterQuestions(questionSetsWithBoxedAnswers)))
-  // );
-  // const removeEmptyQuestions = filteredQuestions?.filter((item) => {
-  //   const isNotOnlyUnderscores = !isQuestion(item);
-  //   return isNotOnlyUnderscores;
-  // });
-  // return groupByPage(removeEmptyQuestions);
 }
-// function render_questions(raw) {
-//   const data = raw.files[0].text_content;
-//   // Answers set
-//   const answers = data.map((page) => getAnswersV2(page));
-//   // Questions Set
-//   const questions = data.map((page) => getQuestionsV2(page));
-//   const organizedQuestions = questions
-//     .map((page) => groupLinesByYaxis(page))
-//     .map((page) => mergeSameLine(page));
-//   // const organizedQuestions = questions
-//   //   .map((page) => reArrangeYValues(page))
-//   //   .map((page) => groupLinesByYaxis(page))
-//   //   .map((page) => mergeSameLine(page));
-//   // Directions set
-//   const mergedQuestions = organizedQuestions.map((page) => mergeSameLine(page));
-//   const directions = organizedQuestions.map((page) => getDirections(page));
-//   const directionIndexes = directions.map((page) => getDirectionIndexes(page));
-//   const questionsWithAnswers = organizedQuestions.map((questions, index) =>
-//     addAnswersToEachQuestion(questions, answers[index], index)
-//   );
-
-//   const questionsSets = questionsWithAnswers.map((questionsWithAnswer, index) =>
-//     getQuestionsSet(
-//       questionsWithAnswer,
-//       directions[index],
-//       directionIndexes[index]
-//     )
-//   );
-//   // Function to identity keywords enclosed in box
-//   const questionSetsWithBoxedAnswers = questionsSets.map((page) =>
-//     identityBoxedanswers(page)
-//   );
-//   console.log(questionSetsWithBoxedAnswers);
-//   const filteredQuestions = removeWithoutAnswers(
-//     mergeSameLine(mergeAllPages(filterQuestions(questionSetsWithBoxedAnswers)))
-//   );
-//   const removeEmptyQuestions = filteredQuestions?.filter((item) => {
-//     const isNotOnlyUnderscores = !isQuestion(item);
-//     return isNotOnlyUnderscores;
-//   });
-//   return groupByPage(removeEmptyQuestions);
-// }
 const identifyBoxedAnswersNew = (boxAnswer, pageAnswers) => {
-  // Initialize an object to store matching objects grouped by boxIndex
-  let groupedAnswers = {};
-
-  // Iterate through each object in pageAnswers
-  pageAnswers.forEach((pageAnswer) => {
-    // Iterate through each box in boxAnswer
-    boxAnswer.forEach((box, index) => {
-      // Check if the text of the current pageAnswer is included in any text of boxAnswer
-      if (box.text.includes(pageAnswer.text)) {
-        // If included, push the current pageAnswer to the matchingAnswers array
-        if (!groupedAnswers[index]) {
-          groupedAnswers[index] = { ...pageAnswer, boxIndex: index };
-        } else {
-          groupedAnswers[index].text += " " + pageAnswer.text;
-        }
-      }
-    });
+  const groupedAnswers = boxAnswer.map((box, index) => {
+    const matchingAnswers = pageAnswers.filter((pageAnswer) =>
+      box.text.includes(pageAnswer.text)
+    );
+    const concatenatedText = matchingAnswers
+      .map((answer) => answer.text)
+      .join(" ");
+    return { ...matchingAnswers[0], text: concatenatedText, boxIndex: index };
   });
 
-  // Convert the grouped answers object into an array
-  const matchingAnswers = Object.values(groupedAnswers);
-
-  return matchingAnswers;
+  return groupedAnswers.filter((answer) => answer.text.trim() !== "");
 };
 
-function concatBoxAnswerWithDriection(questions, boxAnswer) {
-  // Extract answer texts from boxAnswer
-  let answerTexts = boxAnswer.map((box) => new Set(box.text.split(" ")));
+function concatBoxAnswerWithDirection(questions, boxAnswer) {
+  const answerTexts = boxAnswer.map((box) => new Set(box.text.split(" ")));
 
-  // Iterate over questions
-  let concatenatedQuestions = questions.map(question => {
-      let { answer, direction } = question;
+  const concatenatedQuestions = questions.map((question) => {
+    const { answer, direction } = question;
 
-      // Check if any answer matches with any text from boxAnswer
-      let matchedTextSet = new Set(); // Using a Set to remove duplicates
-      for (let ans of answer) {
-          for (let textSet of answerTexts) {
-              if (textSet.has(ans)) {
-                  textSet.forEach(word => matchedTextSet.add(word));
-                  break;
-              }
-          }
-      }
+    const matchedTextSet = new Set();
+    answer.forEach((ans) => {
+      answerTexts.forEach((textSet) => {
+        if (textSet.has(ans)) {
+          textSet.forEach((word) => matchedTextSet.add(word));
+        }
+      });
+    });
 
-      // Concatenate direction text and matched text
-      let concatenated = direction + " " + [...matchedTextSet].join(" ").trim();
-      
-      // Add the concatenated text to the question object
-      return {
-          ...question,
-          direction: concatenated
-      };
+    const concatenated = direction + " " + [...matchedTextSet].join(" ").trim();
+
+    return { ...question, direction: concatenated };
   });
 
   return concatenatedQuestions;
 }
-
-
-const isQuestion = (item) => {
-  if (item?.question && typeof item.question === "string") {
-    // Regular expression to match only underscores
-    var regex = /^_+$/;
-    return regex.test(item.question.trim()); // Trim whitespace before testing
-  }
-  return false;
-};
 
 const LOCAL_ENV = false;
 const PYTHON_APP_BASE_URL = LOCAL_ENV

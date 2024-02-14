@@ -131,9 +131,11 @@ const mergeSameLine = (data) => {
   let currentAnswer = [];
   let currentY = [];
   data.forEach((item, index) => {
-    // if (/^_+$/.test(item?.text.trim())) {
-    //   return;
-    // }
+    if (/^_+$/.test(item?.text.trim()) || item?.text.trim() === "") {
+      console.log(item);
+      return;
+    }
+
     // Concatenate the "text" values until it ends with a period ('.')
     currentText += " " + item.text;
     currentY.push(item.y);
