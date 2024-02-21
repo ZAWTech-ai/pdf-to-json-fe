@@ -25,12 +25,12 @@ function render_questions(raw) {
   const directions = organizedQuestions.map((page) => getDirections(page));
   console.log(directions);
   const directionIndexes = directions.map((page) => getDirectionIndexes(page));
-
+  console.log(finalQuestions);
   // Adding answers to each question based on Y axis
   const questionsWithAnswers = finalQuestions.map((questions, index) =>
     addAnswersToEachQuestion(questions, answers[index], index)
   );
-
+  console.log(questionsWithAnswers);
   const questionsWithDirections = questionsWithAnswers
     .map((page, index) => addDirectionsToEachQuestion(page, directions[index]))
     .map((page) => removeWithoutAnswers(page));

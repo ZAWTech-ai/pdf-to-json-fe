@@ -167,7 +167,9 @@ const startsWithRomanNumeral = (str) => {
   // Regular expression to match Roman numerals, letters, or numbers followed by a dot
   // const regex = /^(?:(?:[ivxlcdm]+|[a-zA-Z]+|\d+)\.\s*)/i;
   // const regex = /^\s*(\d+\.|i{1,3}\.|[ivxlcdm]+\.)/i;
-  const regex = /^\s*(\d+|[ivxlcdm]+)\s*\./i;
+  // const regex = /^\s*(\d+|[ivxlcdm]+)\s*\./i; -----------------------------Current
+  const regex =
+    /^(?:[ivxlcdm]+\s*|[a-z]+\s*|\d+\s*|\d+\.\s*|[ivxlcdm]+\.\s*|[a-z]+\.\s*)/i;
   // const regex2 = /^(?:(?:[ivxlcdm]+|[a-zA-Z]+|\d+)\s*)/i;
   return regex.test(str);
 };
@@ -238,12 +240,25 @@ const getDirections = (data) => {
 const addAnswersToEachQuestion = (questions, answers, pageNum) => {
   const filteredQuestions = questions.map((question, index) => {
     const filteredAnswers = getFilteredAnswers(question, answers);
-    return { ...question, answer: filteredAnswers, page: pageNum + 1 };
+    const answersWithoutDuplication = removeDuplicates(filteredAnswers, "x").map(
+      (answer) => answer.text
+    );
+    return { ...question, answer: answersWithoutDuplication, page: pageNum + 1 };
   });
 
   return filteredQuestions;
 };
-
+function removeDuplicates(array, property) {
+  let seen = new Set();
+  return array.filter((obj) => {
+    let value = obj[property];
+    if (!seen.has(value)) {
+      seen.add(value);
+      return true;
+    }
+    return false;
+  });
+}
 const getFilteredAnswers = (question, answers) => {
   if (Array.isArray(question.y)) {
     return question.y.flatMap((yValue) =>
@@ -265,7 +280,7 @@ const filterAnswersForY = (question, answers, yValue) => {
           (answer.y > minY && answer.y < maxY)) &&
         question.page === answer.page
     )
-    .map((answer) => answer.text);
+    .map((answer) => answer);
 };
 
 const filterQuestions = (data) => {
@@ -323,7 +338,7 @@ const removeWithoutAnswers = (data) => {
       return {
         direction: data.direction.replace(/^[0-9A-Za-z]+\./, "").trim(),
         question: data.text.replace(/^[0-9A-Za-z]+\./, "").trim(),
-        answer: data.answer.map((answer) => answer.trim()),
+        answer: data.answer.map((answer) => answer?.trim()),
         page: data.page,
         y: data.y,
       };
@@ -367,7 +382,19 @@ function shuffleArray(array) {
 }
 
 function addDirectionsToEachQuestion(questions, directions) {
+  console.log(questions);
   const questionsWithDirections = [];
+
+  if(directions?.length===0){
+    questions?.forEach((question)=>{
+      questionsWithDirections?.push({
+        ...question,
+        question:question?.text,
+        direction:"[Add direction here]"
+      })
+    })
+    return questionsWithDirections
+  }
   directions.forEach((direction, index) => {
     questions.forEach((question) => {
       if (index < directions.length - 1) {
