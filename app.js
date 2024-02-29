@@ -1,5 +1,9 @@
 function render_questions(raw) {
-  const data = raw.files[0].text_content;
+  const rawData = raw.files[0].text_content;
+  //remvoe empty string from here
+  const data = rawData.map(page => {
+    return page.filter(item => item?.text?.trim() !== '');
+  });
   // Get answers on the basis of red color shade
   const answers = data.map((page) => getAnswersV2(page));
   console.log(data);
