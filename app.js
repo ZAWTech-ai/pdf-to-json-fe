@@ -1,8 +1,8 @@
 function render_questions(raw) {
   const rawData = raw.files[0].text_content;
   //remvoe empty string from here
-  const data = rawData.map(page => {
-    return page.filter(item => item?.text?.trim() !== '');
+  const data = rawData.map((page) => {
+    return page.filter((item) => item?.text?.trim() !== "");
   });
   // Get answers on the basis of red color shade
   const answers = data.map((page) => getAnswersV2(page));
@@ -29,32 +29,42 @@ function render_questions(raw) {
   const directions = organizedQuestions.map((page) => getDirections(page));
   console.log(directions);
   const directionIndexes = directions.map((page) => getDirectionIndexes(page));
+  const providedAnswers = organizedQuestions.map((page, index) =>
+    getProvidedAnswers(
+      directionIndexes[index],
+      finalQuestions[index][0].index,
+      page
+    )
+  );
   console.log(finalQuestions);
   // Adding answers to each question based on Y axis
   const questionsWithAnswers = finalQuestions.map((questions, index) =>
     addAnswersToEachQuestion(questions, answers[index], index)
   );
+
   console.log(questionsWithAnswers);
   const questionsWithDirections = questionsWithAnswers
     .map((page, index) => addDirectionsToEachQuestion(page, directions[index]))
     .map((page) => removeWithoutAnswers(page));
-  const concatBoxAnswer = questionsWithDirections?.map((item, index) =>
-    concatBoxAnswerWithDirection(
-      item,
-      questionSetsWithBoxedAnswers[index] || []
-    )
+  const concatBoxAnswer = questionsWithDirections?.map((questions, index) =>
+    // concatBoxAnswerWithDirection(
+    //   item,
+    //   providedAnswers[index] || []
+    // )
+    addProvidedAnswersToDirection(questions, providedAnswers[index] || [])
   );
 
   return concatBoxAnswer;
 }
 const identifyBoxedAnswersNew = (boxAnswer, pageAnswers) => {
   const groupedAnswers = boxAnswer.map((box, index) => {
-    const matchingAnswers = pageAnswers.filter((pageAnswer) =>
-      box.text.includes(pageAnswer.text)
-    );
+    const matchingAnswers = pageAnswers;
+    // const matchingAnswers = pageAnswers.filter((pageAnswer) =>
+    //   box.text.includes(pageAnswer.text)
+    // );
     const concatenatedText = matchingAnswers
       .map((answer) => answer.text)
-      .join(" ");
+      .join("|");
     return { ...matchingAnswers[0], text: concatenatedText, boxIndex: index };
   });
 

@@ -37,7 +37,7 @@ const groupLinesByYaxis = (data) => {
   const merged = sorted.map((sort) => {
     return {
       ...sort[0],
-      text: sort.map((single) => single.text).join(""),
+      text: sort.map((single) => single.text).join(" "),
     };
   });
   return merged;
@@ -240,10 +240,15 @@ const getDirections = (data) => {
 const addAnswersToEachQuestion = (questions, answers, pageNum) => {
   const filteredQuestions = questions.map((question, index) => {
     const filteredAnswers = getFilteredAnswers(question, answers);
-    const answersWithoutDuplication = removeDuplicates(filteredAnswers, "x").map(
-      (answer) => answer.text
-    );
-    return { ...question, answer: answersWithoutDuplication, page: pageNum + 1 };
+    const answersWithoutDuplication = removeDuplicates(
+      filteredAnswers,
+      "x"
+    ).map((answer) => answer.text.replace(/^\d+\s*\.?/, ""));
+    return {
+      ...question,
+      answer: answersWithoutDuplication,
+      page: pageNum + 1,
+    };
   });
 
   return filteredQuestions;
@@ -385,15 +390,15 @@ function addDirectionsToEachQuestion(questions, directions) {
   console.log(questions);
   const questionsWithDirections = [];
 
-  if(directions?.length===0){
-    questions?.forEach((question)=>{
+  if (directions?.length === 0) {
+    questions?.forEach((question) => {
       questionsWithDirections?.push({
         ...question,
-        question:question?.text,
-        direction:"[Add direction here]"
-      })
-    })
-    return questionsWithDirections
+        question: question?.text,
+        direction: "[Add direction here]",
+      });
+    });
+    return questionsWithDirections;
   }
   directions.forEach((direction, index) => {
     questions.forEach((question) => {
@@ -420,4 +425,42 @@ function addDirectionsToEachQuestion(questions, directions) {
     });
   });
   return questionsWithDirections;
+}
+
+function getProvidedAnswers(directionIndex, questionIndex, data) {
+  const refinedDirectionIndexes = closestDIrectionIndexToQuestion(
+    directionIndex,
+    questionIndex
+  );
+  return data
+    .filter(
+      (record) =>
+        record.index > refinedDirectionIndexes && record.index < questionIndex
+    )
+    .map((filtered) => filtered.text)
+    .join(" ");
+}
+
+function closestDIrectionIndexToQuestion(directionIndexes, questionIndex) {
+  const array = directionIndexes;
+  let closest = array[0];
+
+  array.forEach((element) => {
+    if (Math.abs(element - questionIndex) < Math.abs(closest - questionIndex)) {
+      closest = element;
+    }
+  });
+  return closest;
+}
+
+function addProvidedAnswersToDirection(questions, providedAnswers) {
+  return questions.map((question) => {
+    const { answer, direction } = question;
+    const concatenatedDirection =
+      direction +
+      (providedAnswers != null && providedAnswers != ""
+        ? shuffleArray(providedAnswers.split(" ")).join(" ")
+        : "");
+    return { ...question, direction: concatenatedDirection };
+  });
 }
