@@ -9,7 +9,6 @@ function render_questions(raw) {
   console.log(data);
   // Replacing answer in the data with ________
   const questions = data.map((page) => getQuestionsV2(page));
-  console.log(questions);
   // Merge each line to create a complete sentence
   const organizedQuestions = questions
     // .map((page) => reArrangeYValues(page))
@@ -29,42 +28,37 @@ function render_questions(raw) {
   const directions = organizedQuestions.map((page) => getDirections(page));
   console.log(directions);
   const directionIndexes = directions.map((page) => getDirectionIndexes(page));
-  const providedAnswers = organizedQuestions.map((page, index) =>
-    getProvidedAnswers(
-      directionIndexes[index],
-      finalQuestions[index][0].index,
-      page
-    )
-  );
   console.log(finalQuestions);
   // Adding answers to each question based on Y axis
   const questionsWithAnswers = finalQuestions.map((questions, index) =>
     addAnswersToEachQuestion(questions, answers[index], index)
   );
-
   console.log(questionsWithAnswers);
+
   const questionsWithDirections = questionsWithAnswers
     .map((page, index) => addDirectionsToEachQuestion(page, directions[index]))
+    .map((page) => emptySpaceWithDashLine(page))
     .map((page) => removeWithoutAnswers(page));
-  const concatBoxAnswer = questionsWithDirections?.map((questions, index) =>
-    // concatBoxAnswerWithDirection(
-    //   item,
-    //   providedAnswers[index] || []
-    // )
-    addProvidedAnswersToDirection(questions, providedAnswers[index] || [])
+
+  console.log(questionsWithDirections);
+
+  const concatBoxAnswer = questionsWithDirections?.map((item, index) =>
+    concatBoxAnswerWithDirection(
+      item,
+      questionSetsWithBoxedAnswers[index] || []
+    )
   );
 
   return concatBoxAnswer;
 }
 const identifyBoxedAnswersNew = (boxAnswer, pageAnswers) => {
   const groupedAnswers = boxAnswer.map((box, index) => {
-    const matchingAnswers = pageAnswers;
-    // const matchingAnswers = pageAnswers.filter((pageAnswer) =>
-    //   box.text.includes(pageAnswer.text)
-    // );
+    const matchingAnswers = pageAnswers.filter((pageAnswer) =>
+      box.text.includes(pageAnswer.text)
+    );
     const concatenatedText = matchingAnswers
       .map((answer) => answer.text)
-      .join("|");
+      .join(" ");
     return { ...matchingAnswers[0], text: concatenatedText, boxIndex: index };
   });
 

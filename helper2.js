@@ -335,7 +335,14 @@ const removeUnwanted = (data) => {
     questionSet.filter((question) => question.text != "_____")
   );
 };
-
+const emptySpaceWithDashLine = (data) => {
+  return data.map((question) => {
+    return {
+      ...question,
+      text: question.text.trim().replace(/\s{3,}/g, "_____"),
+    };
+  });
+};
 const removeWithoutAnswers = (data) => {
   return data
     .filter((question) => question.answer.length > 0)
