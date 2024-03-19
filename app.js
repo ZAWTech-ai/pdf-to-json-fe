@@ -40,13 +40,19 @@ function render_questions(raw) {
     .map((page) => emptySpaceWithDashLine(page))
     .map((page) => removeWithoutAnswers(page));
 
-  console.log(questionsWithDirections);
-
-  const concatBoxAnswer = questionsWithDirections?.map((item, index) =>
-    concatBoxAnswerWithDirection(
-      item,
-      questionSetsWithBoxedAnswers[index] || []
-    )
+  const isFillInTheBlanksDirectionQuestions = questionsWithDirections?.map(
+    (page) =>
+      page?.filter((question) =>
+        isFillInTheBlanksDirection(question?.direction)
+      )
+  );
+  console.log(isFillInTheBlanksDirectionQuestions);
+  const concatBoxAnswer = isFillInTheBlanksDirectionQuestions?.map(
+    (item, index) =>
+      concatBoxAnswerWithDirection(
+        item,
+        questionSetsWithBoxedAnswers[index] || []
+      )
   );
 
   return concatBoxAnswer;
