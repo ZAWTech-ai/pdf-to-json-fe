@@ -40,22 +40,17 @@ function render_questions(raw) {
     .map((page) => emptySpaceWithDashLine(page))
     .map((page) => removeWithoutAnswers(page));
 
-  const isFillInTheBlanksDirectionQuestions = questionsWithDirections?.map(
-    (page) =>
-      page?.filter((question) =>
-        isFillInTheBlanksDirection(question?.direction)
-      )
-  );
-  console.log(isFillInTheBlanksDirectionQuestions);
-  const concatBoxAnswer = isFillInTheBlanksDirectionQuestions?.map(
-    (item, index) =>
-      concatBoxAnswerWithDirection(
-        item,
-        questionSetsWithBoxedAnswers[index] || []
-      )
+  const concatBoxAnswer = questionsWithDirections?.map((item, index) =>
+    concatBoxAnswerWithDirection(
+      item,
+      questionSetsWithBoxedAnswers[index] || []
+    )
   );
 
-  return concatBoxAnswer;
+  const isFillInTheBlanksDirectionQuestions = concatBoxAnswer?.map((page) =>
+    page?.filter((question) => isFillInTheBlanksDirection(question?.direction))
+  );
+  return isFillInTheBlanksDirectionQuestions;
 }
 const identifyBoxedAnswersNew = (boxAnswer, pageAnswers) => {
   const groupedAnswers = boxAnswer.map((box, index) => {
