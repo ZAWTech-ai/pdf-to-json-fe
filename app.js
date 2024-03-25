@@ -33,18 +33,24 @@ function render_questions(raw) {
   const questionsWithAnswers = finalQuestions.map((questions, index) =>
     addAnswersToEachQuestion(questions, answers[index], index)
   );
-  console.log(questionsWithAnswers);
-
+  const providedAnswers = organizedQuestions.map((page, index) =>
+    getProvidedAnswers(
+      directionIndexes[index],
+      finalQuestions[index][0].index,
+      page
+    )
+  );
   const questionsWithDirections = questionsWithAnswers
     .map((page, index) => addDirectionsToEachQuestion(page, directions[index]))
     .map((page) => emptySpaceWithDashLine(page))
     .map((page) => removeWithoutAnswers(page));
 
-  const concatBoxAnswer = questionsWithDirections?.map((item, index) =>
-    concatBoxAnswerWithDirection(
-      item,
-      questionSetsWithBoxedAnswers[index] || []
-    )
+  const concatBoxAnswer = questionsWithDirections?.map((questions, index) =>
+    // concatBoxAnswerWithDirection(
+    //   item,
+    //   questionSetsWithBoxedAnswers[index] || []
+    // )
+    addProvidedAnswersToDirection(questions, providedAnswers[index] || [])
   );
 
   const isFillInTheBlanksDirectionQuestions = concatBoxAnswer?.map((page) =>
@@ -57,6 +63,7 @@ const identifyBoxedAnswersNew = (boxAnswer, pageAnswers) => {
     const matchingAnswers = pageAnswers.filter((pageAnswer) =>
       box.text.includes(pageAnswer.text)
     );
+    const shuffledAnswers = shuffleArray(matchingAnswers);
     const concatenatedText = matchingAnswers
       .map((answer) => answer.text)
       .join(" ");
@@ -68,7 +75,7 @@ const identifyBoxedAnswersNew = (boxAnswer, pageAnswers) => {
 
 function concatBoxAnswerWithDirection(questions, boxAnswer) {
   const answerTexts = boxAnswer.map((box) => new Set(box.text.split(" ")));
-
+  console.log(answerTexts);
   const concatenatedQuestions = questions.map((question) => {
     const { answer, direction } = question;
 
