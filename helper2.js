@@ -240,10 +240,9 @@ const getDirections = (data) => {
 const addAnswersToEachQuestion = (questions, answers, pageNum) => {
   const filteredQuestions = questions.map((question, index) => {
     const filteredAnswers = getFilteredAnswers(question, answers);
-    const answersWithoutDuplication = removeDuplicates(
-      filteredAnswers,
-      "x"
-    ).map((answer) => answer.text.replace(/^\d+\s*\.?/, ""));
+    const answersWithoutDuplication = removeDuplicates(filteredAnswers, "x")
+      .map((answer) => answer.text.replace(/^\d+\s*\.?/, ""))
+      .map((answer) => answer?.trim()?.replace(/\//g, "|"));
     return {
       ...question,
       answer: answersWithoutDuplication,
