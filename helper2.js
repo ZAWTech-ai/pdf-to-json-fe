@@ -37,7 +37,7 @@ const groupLinesByYaxis = (data) => {
   const merged = sorted.map((sort) => {
     return {
       ...sort[0],
-      text: sort.map((single) => single.text).join(""),
+      text: sort.map((single) => single.text).join(" "),
     };
   });
   return merged;
@@ -129,36 +129,49 @@ const mergeSameLine = (data) => {
   const mergedArray = [];
   let currentText = "";
   let currentAnswer = [];
+  let currentY = [];
   data.forEach((item, index) => {
+    if (/^_+$/.test(item?.text.trim()) || item?.text.trim() === "") {
+      console.log(item);
+      return;
+    }
+
     // Concatenate the "text" values until it ends with a period ('.')
-    currentText += item.text;
+    currentText += " " + item.text;
+    currentY.push(item.y);
     currentAnswer = currentAnswer.concat(item.answer || []);
     if (
       item?.text?.trim()?.endsWith(".") ||
+      item?.text?.trim()?.endsWith("?") ||
       item?.text?.trim()?.endsWith(")") ||
       item?.text?.trim()?.endsWith("。") ||
-      item?.text?.trim()?.endsWith("?") ||
       startsWithRomanNumeral(data[index + 1]?.text?.trim())
     ) {
       // If the current "text" ends with a period, push it to the merged array
       mergedArray.push({
-        ...item,
+        ...data[index - 1],
         text: currentText.trim(),
         answer: currentAnswer,
+        y: currentY,
       });
+
       // Reset currentText for the next iteration
       currentText = "";
       currentAnswer = [];
+      currentY = [];
     }
   });
   return mergedArray;
 };
-
 const startsWithRomanNumeral = (str) => {
   // Regular expression to match Roman numerals, letters, or numbers followed by a dot
-  const regex = /^(?:(?:[ivxlcdm]+|[a-zA-Z]+|\d+)\.\s*)/i;
-  const regex2 = /^(?:(?:[ivxlcdm]+|[a-zA-Z]+|\d+)\s*)/i;
-  return regex.test(str) || regex2.test(str);
+  // const regex = /^(?:(?:[ivxlcdm]+|[a-zA-Z]+|\d+)\.\s*)/i;
+  // const regex = /^\s*(\d+\.|i{1,3}\.|[ivxlcdm]+\.)/i;
+  // const regex = /^\s*(\d+|[ivxlcdm]+)\s*\./i; -----------------------------Current
+  const regex =
+    /^(?:[ivxlcdm]+\s*|[a-z]+\s*|\d+\s*|\d+\.\s*|[ivxlcdm]+\.\s*|[a-z]+\.\s*)/i;
+  // const regex2 = /^(?:(?:[ivxlcdm]+|[a-zA-Z]+|\d+)\s*)/i;
+  return regex.test(str);
 };
 
 const getNumberedList = (data) => {
@@ -171,7 +184,24 @@ const getNumberedList = (data) => {
     .filter((item) => startsWithRomanNumeral(item.text));
   return questions;
 };
-
+const getNonNumberList = (data) => {
+  const questions = data
+    .map((item) => {
+      return {
+        ...item,
+      };
+    })
+    .filter((item) => startsWithnonNumeral(item.text));
+  return questions;
+};
+const startsWithnonNumeral = (str) => {
+  // Regular expression to match Roman numerals, letters, or numbers followed by a dot
+  // const regex = /^(?:(?:[ivxlcdm]+|[a-zA-Z]+|\d+)\.\s*)/i;
+  // const regex = /^\s*(\d+\.|i{1,3}\.|[ivxlcdm]+\.)/i;
+  const regex = /^\s*(\d+|[ivxlcdm]+)\s*\./i;
+  // const regex2 = /^(?:(?:[ivxlcdm]+|[a-zA-Z]+|\d+)\s*)/i;
+  return !regex.test(str);
+};
 const isRedColor = (color) => {
   // Assuming color is in the format #RRGGBB
   // Extract the red component (first two characters) and convert to decimal
@@ -208,19 +238,53 @@ const getDirections = (data) => {
 };
 
 const addAnswersToEachQuestion = (questions, answers, pageNum) => {
-  return questions.map((question, index) => {
-    const maxY = parseFloat(question.y) + ANSWER_TOLLERANCE;
-    const minY = parseFloat(question.y) - ANSWER_TOLLERANCE;
-    const filteredAnswers = answers
-      .filter(
-        (answer) =>
-          (Math.trunc(question.y) === Math.trunc(answer.y) ||
-            (answer.y > minY && answer.y < maxY)) &&
-          question.page === answer.page
-      )
-      .map((answer) => answer.text);
-    return { ...question, answer: filteredAnswers, page: pageNum + 1 };
+  const filteredQuestions = questions.map((question, index) => {
+    const filteredAnswers = getFilteredAnswers(question, answers);
+    const answersWithoutDuplication = removeDuplicates(filteredAnswers, "x")
+      .map((answer) => answer.text.replace(/^\d+\s*\.?/, ""))
+      .map((answer) => answer?.trim()?.replace(/\//g, "|"));
+    return {
+      ...question,
+      answer: answersWithoutDuplication,
+      page: pageNum + 1,
+    };
   });
+
+  return filteredQuestions;
+};
+function removeDuplicates(array, property) {
+  let seen = new Set();
+  return array.filter((obj) => {
+    let value = obj[property];
+    if (!seen.has(value)) {
+      seen.add(value);
+      return true;
+    }
+    return false;
+  });
+}
+const getFilteredAnswers = (question, answers) => {
+  if (Array.isArray(question.y)) {
+    return question.y.flatMap((yValue) =>
+      filterAnswersForY(question, answers, yValue)
+    );
+  } else {
+    return filterAnswersForY(question, answers, question.y);
+  }
+};
+
+const filterAnswersForY = (question, answers, yValue) => {
+  const maxY = parseFloat(yValue) + ANSWER_TOLLERANCE;
+  const minY = parseFloat(yValue) - ANSWER_TOLLERANCE;
+
+  return answers
+    .filter(
+      (answer) =>
+        (Math.trunc(yValue) === Math.trunc(answer.y) ||
+          (answer.y > minY && answer.y < maxY)) &&
+        question.page === answer.page
+    )
+    .map((answer) => answer);
 };
 
 const filterQuestions = (data) => {
@@ -270,7 +334,14 @@ const removeUnwanted = (data) => {
     questionSet.filter((question) => question.text != "_____")
   );
 };
-
+const emptySpaceWithDashLine = (data) => {
+  return data.map((question) => {
+    return {
+      ...question,
+      text: question.text.trim().replace(/\s{3,}/g, "_____"),
+    };
+  });
+};
 const removeWithoutAnswers = (data) => {
   return data
     .filter((question) => question.answer.length > 0)
@@ -278,8 +349,9 @@ const removeWithoutAnswers = (data) => {
       return {
         direction: data.direction.replace(/^[0-9A-Za-z]+\./, "").trim(),
         question: data.text.replace(/^[0-9A-Za-z]+\./, "").trim(),
-        answer: data.answer.map((answer) => answer.trim()),
+        answer: data.answer.map((answer) => answer?.trim()),
         page: data.page,
+        y: data.y,
       };
     });
 };
@@ -321,7 +393,19 @@ function shuffleArray(array) {
 }
 
 function addDirectionsToEachQuestion(questions, directions) {
+  console.log(questions);
   const questionsWithDirections = [];
+
+  if (directions?.length === 0) {
+    questions?.forEach((question) => {
+      questionsWithDirections?.push({
+        ...question,
+        question: question?.text,
+        direction: "[Add direction here]",
+      });
+    });
+    return questionsWithDirections;
+  }
   directions.forEach((direction, index) => {
     questions.forEach((question) => {
       if (index < directions.length - 1) {
@@ -347,4 +431,43 @@ function addDirectionsToEachQuestion(questions, directions) {
     });
   });
   return questionsWithDirections;
+}
+
+function getProvidedAnswers(directionIndex, questionIndex, data) {
+  const refinedDirectionIndexes = closestDIrectionIndexToQuestion(
+    directionIndex,
+    questionIndex
+  );
+  return data
+    .filter(
+      (record) =>
+        record.index > refinedDirectionIndexes && record.index < questionIndex
+    )
+    .map((filtered) => filtered.text)
+    .join(" ");
+}
+
+function closestDIrectionIndexToQuestion(directionIndexes, questionIndex) {
+  const array = directionIndexes;
+  let closest = array[0];
+
+  array.forEach((element) => {
+    if (Math.abs(element - questionIndex) < Math.abs(closest - questionIndex)) {
+      closest = element;
+    }
+  });
+  return closest;
+}
+
+function addProvidedAnswersToDirection(questions, providedAnswers) {
+  return questions.map((question) => {
+    const { answer, direction } = question;
+    const concatenatedDirection =
+      direction +
+      "&#10;" +
+      (providedAnswers != null && providedAnswers != ""
+        ? shuffleArray(providedAnswers.split(" ")).join(" ")
+        : "");
+    return { ...question, direction: concatenatedDirection };
+  });
 }

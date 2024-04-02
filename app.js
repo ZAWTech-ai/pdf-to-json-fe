@@ -1,8 +1,13 @@
 function render_questions(raw) {
-  const data = raw.files[0].text_content;
+  const rawData = raw.files[0].text_content;
+  console.log(rawData);
+  //remvoe empty string from here
+  const data = rawData.map((page) => {
+    return page.filter((item) => item?.text?.trim() !== "");
+  });
   // Get answers on the basis of red color shade
   const answers = data.map((page) => getAnswersV2(page));
-
+  console.log(data);
   // Replacing answer in the data with ________
   const questions = data.map((page) => getQuestionsV2(page));
   // Merge each line to create a complete sentence
@@ -10,92 +15,89 @@ function render_questions(raw) {
     // .map((page) => reArrangeYValues(page))
     .map((page) => groupLinesByYaxis(page))
     .map((page) => mergeSameLine(page));
+  console.log(organizedQuestions);
+  const nonNumeral = organizedQuestions?.map((page) => getNonNumberList(page));
+  const getBoxedAnswer = nonNumeral;
   // Get line that starts with Number, Roman or Alphabet to consider it as a question
   const finalQuestions = organizedQuestions.map((page) =>
     getNumberedList(page)
   );
-
+  const questionSetsWithBoxedAnswers = getBoxedAnswer?.map((item, index) =>
+    identifyBoxedAnswersNew(item, answers[index])
+  );
   // Get Directions by using regex
   const directions = organizedQuestions.map((page) => getDirections(page));
   const directionIndexes = directions.map((page) => getDirectionIndexes(page));
-
   // Adding answers to each question based on Y axis
   const questionsWithAnswers = finalQuestions.map((questions, index) =>
     addAnswersToEachQuestion(questions, answers[index], index)
   );
-
+  const providedAnswers = organizedQuestions.map((page, index) =>
+    getProvidedAnswers(
+      directionIndexes[index],
+      finalQuestions[index][0].index,
+      page
+    )
+  );
+  console.log(providedAnswers);
   const questionsWithDirections = questionsWithAnswers
     .map((page, index) => addDirectionsToEachQuestion(page, directions[index]))
+    .map((page) => emptySpaceWithDashLine(page))
     .map((page) => removeWithoutAnswers(page));
+  console.log(providedAnswers);
+  const concatBoxAnswer = questionsWithDirections?.map((questions, index) =>
+    // concatBoxAnswerWithDirection(
+    //   item,
+    //   questionSetsWithBoxedAnswers[index] || []
+    // )
+    addProvidedAnswersToDirection(
+      questions,
+      providedAnswers[index] || [],
+      data[index]
+    )
+  );
 
-  return questionsWithDirections;
-  // Identity keywords enclosed in box
-  // const questionSetsWithBoxedAnswers = questionsSets.map((page) =>
-  //   identityBoxedanswers(page)
-  // );
-  // console.log(questionsWithDirections);
-
-  // console.log(questionSetsWithBoxedAnswers);
-  // const filteredQuestions = removeWithoutAnswers(
-  //   mergeSameLine(mergeAllPages(filterQuestions(questionSetsWithBoxedAnswers)))
-  // );
-  // const removeEmptyQuestions = filteredQuestions?.filter((item) => {
-  //   const isNotOnlyUnderscores = !isQuestion(item);
-  //   return isNotOnlyUnderscores;
-  // });
-  // return groupByPage(removeEmptyQuestions);
+  const isFillInTheBlanksDirectionQuestions = concatBoxAnswer?.map((page) =>
+    page?.filter((question) => isFillInTheBlanksDirection(question?.direction))
+  );
+  return isFillInTheBlanksDirectionQuestions;
 }
-// function render_questions(raw) {
-//   const data = raw.files[0].text_content;
-//   // Answers set
-//   const answers = data.map((page) => getAnswersV2(page));
-//   // Questions Set
-//   const questions = data.map((page) => getQuestionsV2(page));
-//   const organizedQuestions = questions
-//     .map((page) => groupLinesByYaxis(page))
-//     .map((page) => mergeSameLine(page));
-//   // const organizedQuestions = questions
-//   //   .map((page) => reArrangeYValues(page))
-//   //   .map((page) => groupLinesByYaxis(page))
-//   //   .map((page) => mergeSameLine(page));
-//   // Directions set
-//   const mergedQuestions = organizedQuestions.map((page) => mergeSameLine(page));
-//   const directions = organizedQuestions.map((page) => getDirections(page));
-//   const directionIndexes = directions.map((page) => getDirectionIndexes(page));
-//   const questionsWithAnswers = organizedQuestions.map((questions, index) =>
-//     addAnswersToEachQuestion(questions, answers[index], index)
-//   );
+const identifyBoxedAnswersNew = (boxAnswer, pageAnswers) => {
+  const groupedAnswers = boxAnswer.map((box, index) => {
+    const matchingAnswers = pageAnswers.filter((pageAnswer) =>
+      box.text.includes(pageAnswer.text)
+    );
+    const shuffledAnswers = shuffleArray(matchingAnswers);
+    const concatenatedText = matchingAnswers
+      .map((answer) => answer.text)
+      .join(" ");
+    return { ...matchingAnswers[0], text: concatenatedText, boxIndex: index };
+  });
 
-//   const questionsSets = questionsWithAnswers.map((questionsWithAnswer, index) =>
-//     getQuestionsSet(
-//       questionsWithAnswer,
-//       directions[index],
-//       directionIndexes[index]
-//     )
-//   );
-//   // Function to identity keywords enclosed in box
-//   const questionSetsWithBoxedAnswers = questionsSets.map((page) =>
-//     identityBoxedanswers(page)
-//   );
-//   console.log(questionSetsWithBoxedAnswers);
-//   const filteredQuestions = removeWithoutAnswers(
-//     mergeSameLine(mergeAllPages(filterQuestions(questionSetsWithBoxedAnswers)))
-//   );
-//   const removeEmptyQuestions = filteredQuestions?.filter((item) => {
-//     const isNotOnlyUnderscores = !isQuestion(item);
-//     return isNotOnlyUnderscores;
-//   });
-//   return groupByPage(removeEmptyQuestions);
-// }
-
-const isQuestion = (item) => {
-  if (item?.question && typeof item.question === "string") {
-    // Regular expression to match only underscores
-    var regex = /^_+$/;
-    return regex.test(item.question.trim()); // Trim whitespace before testing
-  }
-  return false;
+  return groupedAnswers.filter((answer) => answer.text.trim() !== "");
 };
+
+function concatBoxAnswerWithDirection(questions, boxAnswer) {
+  const answerTexts = boxAnswer.map((box) => new Set(box.text.split(" ")));
+  const concatenatedQuestions = questions.map((question) => {
+    const { answer, direction } = question;
+
+    const matchedTextSet = new Set();
+    answer.forEach((ans) => {
+      answerTexts.forEach((textSet) => {
+        if (textSet.has(ans)) {
+          textSet.forEach((word) => matchedTextSet.add(word));
+        }
+      });
+    });
+
+    const concatenated = direction + " " + [...matchedTextSet].join(" ").trim();
+
+    return { ...question, direction: concatenated };
+  });
+
+  return concatenatedQuestions;
+}
 
 const LOCAL_ENV = false;
 const PYTHON_APP_BASE_URL = LOCAL_ENV
@@ -143,7 +145,9 @@ function uploadFinish(result) {
   questions.forEach((question, index) => {
     const singleQuestion = `
           <div class="mb-4 p-2">
-            <h6>${index + 1}- ${question.direction}</h6>
+            <textarea cols="40" row="1">${index + 1}- ${
+      question.direction
+    }</textarea>
             <h4>Q: ${question.question}</h4>
             <h4 >A: ${question.answer.join(",")}</h4>
           </div>

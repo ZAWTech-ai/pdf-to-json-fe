@@ -1,4 +1,4 @@
-const ANSWER_COLOR = "#FF0000";
+const ANSWER_COLOR = ["#FF0000", "#FB0106"];
 const ANSWER_TOLLERANCE = 8;
 
 // const getDirections = (data) => {
@@ -88,8 +88,7 @@ const getAnswers = (page, pageNumber) => {
   page.forEach((row) => {
     row.column.forEach((column) => {
       if (
-        column.text.color == ANSWER_COLOR ||
-        column.text.color == "#FB0106" ||
+        ANSWER_COLOR.includes(column.text.color) ||
         (column.text.fontStyle === "Underline" &&
           countDashes(column.text.text) < 2)
       ) {
@@ -114,7 +113,9 @@ function countDashes(str, charToCount = "_") {
 
 const removeAnswers = (page) => {
   const filteredData = page.map((subarray) =>
-    subarray.filter((item) => !item.color || item.color !== ANSWER_COLOR)
+    subarray.filter(
+      (item) => !item.color || !ANSWER_COLOR?.includes(item.color)
+    )
   );
   return filteredData;
 };
