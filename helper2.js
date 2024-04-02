@@ -464,6 +464,7 @@ function addProvidedAnswersToDirection(questions, providedAnswers) {
     const { answer, direction } = question;
     const concatenatedDirection =
       direction +
+      "&#10;" +
       (providedAnswers != null && providedAnswers != ""
         ? shuffleArray(providedAnswers.split(" ")).join(" ")
         : "");

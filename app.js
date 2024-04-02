@@ -1,5 +1,6 @@
 function render_questions(raw) {
   const rawData = raw.files[0].text_content;
+  console.log(rawData);
   //remvoe empty string from here
   const data = rawData.map((page) => {
     return page.filter((item) => item?.text?.trim() !== "");
@@ -14,6 +15,7 @@ function render_questions(raw) {
     // .map((page) => reArrangeYValues(page))
     .map((page) => groupLinesByYaxis(page))
     .map((page) => mergeSameLine(page));
+  console.log(organizedQuestions);
   const nonNumeral = organizedQuestions?.map((page) => getNonNumberList(page));
   const getBoxedAnswer = nonNumeral;
   // Get line that starts with Number, Roman or Alphabet to consider it as a question
@@ -23,12 +25,9 @@ function render_questions(raw) {
   const questionSetsWithBoxedAnswers = getBoxedAnswer?.map((item, index) =>
     identifyBoxedAnswersNew(item, answers[index])
   );
-  console.log(organizedQuestions);
   // Get Directions by using regex
   const directions = organizedQuestions.map((page) => getDirections(page));
-  console.log(directions);
   const directionIndexes = directions.map((page) => getDirectionIndexes(page));
-  console.log(finalQuestions);
   // Adding answers to each question based on Y axis
   const questionsWithAnswers = finalQuestions.map((questions, index) =>
     addAnswersToEachQuestion(questions, answers[index], index)
@@ -40,17 +39,22 @@ function render_questions(raw) {
       page
     )
   );
+  console.log(providedAnswers);
   const questionsWithDirections = questionsWithAnswers
     .map((page, index) => addDirectionsToEachQuestion(page, directions[index]))
     .map((page) => emptySpaceWithDashLine(page))
     .map((page) => removeWithoutAnswers(page));
-
+  console.log(providedAnswers);
   const concatBoxAnswer = questionsWithDirections?.map((questions, index) =>
     // concatBoxAnswerWithDirection(
     //   item,
     //   questionSetsWithBoxedAnswers[index] || []
     // )
-    addProvidedAnswersToDirection(questions, providedAnswers[index] || [])
+    addProvidedAnswersToDirection(
+      questions,
+      providedAnswers[index] || [],
+      data[index]
+    )
   );
 
   const isFillInTheBlanksDirectionQuestions = concatBoxAnswer?.map((page) =>
@@ -75,7 +79,6 @@ const identifyBoxedAnswersNew = (boxAnswer, pageAnswers) => {
 
 function concatBoxAnswerWithDirection(questions, boxAnswer) {
   const answerTexts = boxAnswer.map((box) => new Set(box.text.split(" ")));
-  console.log(answerTexts);
   const concatenatedQuestions = questions.map((question) => {
     const { answer, direction } = question;
 
@@ -142,7 +145,9 @@ function uploadFinish(result) {
   questions.forEach((question, index) => {
     const singleQuestion = `
           <div class="mb-4 p-2">
-            <h6>${index + 1}- ${question.direction}</h6>
+            <textarea cols="40" row="1">${index + 1}- ${
+      question.direction
+    }</textarea>
             <h4>Q: ${question.question}</h4>
             <h4 >A: ${question.answer.join(",")}</h4>
           </div>
