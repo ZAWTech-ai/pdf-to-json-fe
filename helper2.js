@@ -1,11 +1,18 @@
 const getAnswersV2 = (data) => {
-  const answers = data.filter((item) => isRedShade(item.color.toUpperCase()));
+  const answers = data.filter(
+    (item) =>
+      isRedShade(item.color.toUpperCase()) ||
+      ANSWER_COLOR.includes(item.color.toUpperCase())
+  );
   return answers;
 };
 
 const getQuestionsV2 = (data) => {
   const questions = data.map((item, index) => {
-    if (isRedShade(item.color.toUpperCase())) {
+    if (
+      isRedShade(item.color.toUpperCase()) ||
+      ANSWER_COLOR.includes(item.color.toUpperCase())
+    ) {
       return {
         ...item,
         y: item.y.toFixed(1),
