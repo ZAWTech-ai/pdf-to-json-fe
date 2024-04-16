@@ -137,31 +137,30 @@ const mergeSameLine = (data) => {
   let currentText = "";
   let currentAnswer = [];
   let currentY = [];
-  data.forEach((item, index) => {
-    if (/^_+$/.test(item?.text.trim()) || item?.text.trim() === "") {
-      console.log(item);
-      return;
-    }
+  const removeDashedText = data.filter((item) => {
+    return !(/^_+$/.test(item?.text.trim()) || item?.text.trim() === "");
+  });
 
+  removeDashedText.forEach((item, index) => {
     // Concatenate the "text" values until it ends with a period ('.')
     currentText += " " + item.text;
     currentY.push(item.y);
     currentAnswer = currentAnswer.concat(item.answer || []);
+    console.log(item?.text, removeDashedText[index + 1]?.text?.trim());
     if (
       item?.text?.trim()?.endsWith(".") ||
       item?.text?.trim()?.endsWith("?") ||
       item?.text?.trim()?.endsWith(")") ||
       item?.text?.trim()?.endsWith("。") ||
-      startsWithRomanNumeral(data[index + 1]?.text?.trim())
+      startsWithRomanNumeral(removeDashedText[index + 1]?.text?.trim())
     ) {
       // If the current "text" ends with a period, push it to the merged array
       mergedArray.push({
-        ...data[index - 1],
+        ...removeDashedText[index - 1],
         text: currentText.trim(),
         answer: currentAnswer,
         y: currentY,
       });
-
       // Reset currentText for the next iteration
       currentText = "";
       currentAnswer = [];
@@ -445,6 +444,7 @@ function getProvidedAnswers(directionIndex, questionIndex, data) {
     directionIndex,
     questionIndex
   );
+  console.log(data, refinedDirectionIndexes, questionIndex);
   return data
     .filter(
       (record) =>
@@ -472,7 +472,7 @@ function addProvidedAnswersToDirection(questions, providedAnswers) {
     const concatenatedDirection =
       direction +
       (providedAnswers != null && providedAnswers != ""
-        ? "&#10;" + shuffleArray(providedAnswers.split(" ")).join(" ")
+        ? "<br/>" + shuffleArray(providedAnswers.split(" ")).join(" ")
         : "");
     return { ...question, direction: concatenatedDirection };
   });

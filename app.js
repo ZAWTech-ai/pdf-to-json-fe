@@ -10,21 +10,18 @@ function render_questions(raw) {
   console.log(data);
   // Replacing answer in the data with ________
   const questions = data.map((page) => getQuestionsV2(page));
+  console.log(questions);
   // Merge each line to create a complete sentence
   const organizedQuestions = questions
     // .map((page) => reArrangeYValues(page))
     .map((page) => groupLinesByYaxis(page))
     .map((page) => mergeSameLine(page));
   console.log(organizedQuestions);
-  const nonNumeral = organizedQuestions?.map((page) => getNonNumberList(page));
-  const getBoxedAnswer = nonNumeral;
   // Get line that starts with Number, Roman or Alphabet to consider it as a question
   const finalQuestions = organizedQuestions.map((page) =>
     getNumberedList(page)
   );
-  const questionSetsWithBoxedAnswers = getBoxedAnswer?.map((item, index) =>
-    identifyBoxedAnswersNew(item, answers[index])
-  );
+
   // Get Directions by using regex
   const directions = organizedQuestions.map((page) => getDirections(page));
   const directionIndexes = directions.map((page) => getDirectionIndexes(page));
@@ -32,6 +29,7 @@ function render_questions(raw) {
   const questionsWithAnswers = finalQuestions.map((questions, index) =>
     addAnswersToEachQuestion(questions, answers[index], index)
   );
+  console.log(finalQuestions);
   const providedAnswers = organizedQuestions.map((page, index) =>
     getProvidedAnswers(
       directionIndexes[index],
@@ -39,22 +37,16 @@ function render_questions(raw) {
       page
     )
   );
-  console.log(providedAnswers);
   const questionsWithDirections = questionsWithAnswers
     .map((page, index) => addDirectionsToEachQuestion(page, directions[index]))
     .map((page) => emptySpaceWithDashLine(page))
     .map((page) => removeWithoutAnswers(page));
-  console.log(providedAnswers);
   const concatBoxAnswer = questionsWithDirections?.map((questions, index) =>
     // concatBoxAnswerWithDirection(
     //   item,
     //   questionSetsWithBoxedAnswers[index] || []
     // )
-    addProvidedAnswersToDirection(
-      questions,
-      providedAnswers[index] || [],
-      data[index]
-    )
+    addProvidedAnswersToDirection(questions, providedAnswers[index] || [])
   );
 
   const isFillInTheBlanksDirectionQuestions = concatBoxAnswer?.map((page) =>
@@ -145,9 +137,7 @@ function uploadFinish(result) {
   questions.forEach((question, index) => {
     const singleQuestion = `
           <div class="mb-4 p-2">
-            <textarea cols="40" row="1">${index + 1}- ${
-      question.direction
-    }</textarea>
+            <h4>${index + 1}- ${question.direction}</h4>
             <h4>Q: ${question.question}</h4>
             <h4 >A: ${question.answer.join(",")}</h4>
           </div>
