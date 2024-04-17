@@ -159,6 +159,7 @@ const mergeSameLine = (data) => {
         ...removeDashedText[index - 1],
         text: currentText.trim(),
         answer: currentAnswer,
+        index: item?.index,
         y: currentY,
       });
       // Reset currentText for the next iteration
@@ -174,8 +175,9 @@ const startsWithRomanNumeral = (str) => {
   // const regex = /^(?:(?:[ivxlcdm]+|[a-zA-Z]+|\d+)\.\s*)/i;
   // const regex = /^\s*(\d+\.|i{1,3}\.|[ivxlcdm]+\.)/i;
   // const regex = /^\s*(\d+|[ivxlcdm]+)\s*\./i; -----------------------------Current
-  const regex =
-    /^(?:[ivxlcdm]+\s*|[a-z]+\s*|\d+\s*|\d+\.\s*|[ivxlcdm]+\.\s*|[a-z]+\.\s*)/i;
+  // const regex =
+  //   /^(?:[ivxlcdm]+\s*|[a-z]+\s*|\d+\s*|\d+\.\s*|[ivxlcdm]+\.\s*|[a-z]+\.\s*)/i;
+  const regex = /^[a-z\d]+\.\s*.*$/i;
   // const regex2 = /^(?:(?:[ivxlcdm]+|[a-zA-Z]+|\d+)\s*)/i;
   return regex.test(str);
 };

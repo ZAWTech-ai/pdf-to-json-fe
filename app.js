@@ -23,13 +23,13 @@ function render_questions(raw) {
   );
 
   // Get Directions by using regex
+  console.log(finalQuestions);
   const directions = organizedQuestions.map((page) => getDirections(page));
   const directionIndexes = directions.map((page) => getDirectionIndexes(page));
   // Adding answers to each question based on Y axis
   const questionsWithAnswers = finalQuestions.map((questions, index) =>
     addAnswersToEachQuestion(questions, answers[index], index)
   );
-  console.log(finalQuestions);
   const providedAnswers = organizedQuestions.map((page, index) =>
     getProvidedAnswers(
       directionIndexes[index],
@@ -37,6 +37,7 @@ function render_questions(raw) {
       page
     )
   );
+  console.log(providedAnswers);
   const questionsWithDirections = questionsWithAnswers
     .map((page, index) => addDirectionsToEachQuestion(page, directions[index]))
     .map((page) => emptySpaceWithDashLine(page))
