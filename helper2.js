@@ -146,11 +146,11 @@ const mergeSameLine = (data) => {
     currentText += " " + item.text;
     currentY.push(item.y);
     currentAnswer = currentAnswer.concat(item.answer || []);
-    console.log(item?.text, removeDashedText[index + 1]?.text?.trim());
+    console.log(currentText);
     if (
       item?.text?.trim()?.endsWith(".") ||
       item?.text?.trim()?.endsWith("?") ||
-      item?.text?.trim()?.endsWith(")") ||
+      // item?.text?.trim()?.endsWith(")") ||
       item?.text?.trim()?.endsWith("。") ||
       startsWithRomanNumeral(removeDashedText[index + 1]?.text?.trim())
     ) {
@@ -452,7 +452,7 @@ function getProvidedAnswers(directionIndex, questionIndex, data) {
       (record) =>
         record.index > refinedDirectionIndexes && record.index < questionIndex
     )
-    .map((filtered) => filtered.text)
+    .map((filtered) => filtered.text?.trim())
     .join(" ");
 }
 
@@ -474,7 +474,10 @@ function addProvidedAnswersToDirection(questions, providedAnswers) {
     const concatenatedDirection =
       direction +
       (providedAnswers != null && providedAnswers != ""
-        ? "<br/>" + shuffleArray(providedAnswers.split(" ")).join(" ")
+        ? "<br/>" +
+          shuffleArray(
+            providedAnswers.split(" ").map((item) => item?.trim())
+          ).join(" ")
         : "");
     return { ...question, direction: concatenatedDirection };
   });

@@ -1,16 +1,14 @@
 function render_questions(raw) {
   const rawData = raw.files[0].text_content;
-  console.log(rawData);
   //remvoe empty string from here
   const data = rawData.map((page) => {
     return page.filter((item) => item?.text?.trim() !== "");
   });
+  console.log(data);
   // Get answers on the basis of red color shade
   const answers = data.map((page) => getAnswersV2(page));
-  console.log(data);
   // Replacing answer in the data with ________
   const questions = data.map((page) => getQuestionsV2(page));
-  console.log(questions);
   // Merge each line to create a complete sentence
   const organizedQuestions = questions
     // .map((page) => reArrangeYValues(page))
@@ -23,9 +21,9 @@ function render_questions(raw) {
   );
 
   // Get Directions by using regex
-  console.log(finalQuestions);
   const directions = organizedQuestions.map((page) => getDirections(page));
   const directionIndexes = directions.map((page) => getDirectionIndexes(page));
+  console.log(finalQuestions);
   // Adding answers to each question based on Y axis
   const questionsWithAnswers = finalQuestions.map((questions, index) =>
     addAnswersToEachQuestion(questions, answers[index], index)
