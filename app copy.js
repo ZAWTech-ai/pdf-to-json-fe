@@ -13,36 +13,72 @@ function render_questions(raw) {
     // .map((page) => reArrangeYValues(page))
     .map((page) => groupLinesByYaxis(page))
     .map((page) => mergeSameLine(page));
+  // Function to split each inner array based on direction indices
+  const splitArraysByDirection = (arr) => {
+    const flattenedSplittedArrays = [];
 
-  const splitQuestionByDirections = splitArraysByDirection(organizedQuestions);
-  // Get line that starts with Number, Roman or Alphabet to consider it as a question
-  const finalQuestions = splitQuestionByDirections.map((page) =>
-    getNumberedList(page)
-  );
+    arr.forEach((innerArr) => {
+      const sections = [];
+      let currentSection = [];
 
+      innerArr.forEach((item) => {
+        if (isFillInTheBlanksDirection(item.text)) {
+          if (currentSection.length > 0) {
+            sections.push(currentSection);
+            currentSection = [];
+          }
+        }
+        currentSection.push(item);
+      });
+
+      if (currentSection.length > 0) {
+        sections.push(currentSection);
+      }
+
+      // Flatten and push non-empty sections to the new array
+      sections.forEach((section) => {
+        if (section.length > 0) {
+          flattenedSplittedArrays.push(section);
+        }
+      });
+    });
+
+    return flattenedSplittedArrays;
+  };
+
+  // Usage
+  const splittedArrArr = splitArraysByDirection(organizedQuestions);
+  const finalQuestions = splittedArrArr.map((page) => getNumberedList(page));
   // Get Directions by using regex
-  const directions = splitQuestionByDirections.map((page) =>
-    getDirections(page)
-  );
+  const directions = splittedArrArr.map((page) => getDirections(page));
   const directionIndexes = directions.map((page) => getDirectionIndexes(page));
   // Adding answers to each question based on Y axis
-  const questionsWithAnswers = finalQuestions.map((questions, index) => {
+  let questionsWithAnswers = finalQuestions.map((questions, index) => {
     if (questions.length === 0) {
-      return []; // or whatever value you want to skip it
+      return; // or whatever value you want to skip it
     }
     const answerByPage = answers?.filter(
       (page) => page[0]?.page === questions[0].page
     );
     return addAnswersToEachQuestion(questions, answerByPage[0], index);
   });
-  const providedAnswers = splitQuestionByDirections.map((page, index) => {
-    // Check if finalQuestions[index][0] exists before accessing its properties
-    const question = finalQuestions[index][0];
-    const questionIndex = question ? question.index : 0;
+  console.log(questionsWithAnswers);
 
-    return getProvidedAnswers(directionIndexes[index], questionIndex, page);
+  const providedAnswersWithoutEmpty = splittedArrArr.filter(
+    (page) => page.length > 0
+  );
+  finalQuestions.filter((page) => page?.length > 0);
+  const providedAnswers = providedAnswersWithoutEmpty.map((page, index) => {
+    let startIndex = 0;
+    if (finalQuestions[index] && finalQuestions[index][0]) {
+      startIndex = finalQuestions[index][0].index || 0;
+    }
+
+    return getProvidedAnswers(directionIndexes[index], startIndex, page);
   });
-
+  questionsWithAnswers = questionsWithAnswers?.filter(
+    (page) => page !== undefined
+  );
   const questionsWithDirections = questionsWithAnswers
     .map((page, index) => addDirectionsToEachQuestion(page, directions[index]))
     .map((page) => emptySpaceWithDashLine(page))
@@ -54,45 +90,11 @@ function render_questions(raw) {
     // )
     addProvidedAnswersToDirection(questions, providedAnswers[index] || [])
   );
-
   const isFillInTheBlanksDirectionQuestions = concatBoxAnswer?.map((page) =>
     page?.filter((question) => isFillInTheBlanksDirection(question?.direction))
   );
   return isFillInTheBlanksDirectionQuestions;
 }
-
-const splitArraysByDirection = (arr) => {
-  const flattenedSplittedArrays = [];
-
-  arr.forEach((innerArr) => {
-    const sections = [];
-    let currentSection = [];
-
-    innerArr.forEach((item) => {
-      if (isFillInTheBlanksDirection(item.text)) {
-        if (currentSection.length > 0) {
-          sections.push(currentSection);
-          currentSection = [];
-        }
-      }
-      currentSection.push(item);
-    });
-
-    if (currentSection.length > 0) {
-      sections.push(currentSection);
-    }
-
-    // Flatten and push non-empty sections to the new array
-    sections.forEach((section) => {
-      if (section.length > 0) {
-        flattenedSplittedArrays.push(section);
-      }
-    });
-  });
-
-  return flattenedSplittedArrays;
-};
-
 const identifyBoxedAnswersNew = (boxAnswer, pageAnswers) => {
   const groupedAnswers = boxAnswer.map((box, index) => {
     const matchingAnswers = pageAnswers.filter((pageAnswer) =>

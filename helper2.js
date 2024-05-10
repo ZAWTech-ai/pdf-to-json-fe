@@ -147,11 +147,13 @@ const mergeSameLine = (data) => {
     currentY.push(item.y);
     currentAnswer = currentAnswer.concat(item.answer || []);
     console.log(currentText);
+    console.log(removeDashedText[index + 1]?.y - item?.y);
     if (
       item?.text?.trim()?.endsWith(".") ||
       item?.text?.trim()?.endsWith("?") ||
-      // item?.text?.trim()?.endsWith(")") ||
+      item?.text?.trim()?.endsWith(")") ||
       item?.text?.trim()?.endsWith("。") ||
+      item?.text?.trim()?.endsWith("!") ||
       startsWithRomanNumeral(removeDashedText[index + 1]?.text?.trim())
     ) {
       // If the current "text" ends with a period, push it to the merged array
@@ -168,6 +170,7 @@ const mergeSameLine = (data) => {
       currentY = [];
     }
   });
+  console.log(mergedArray);
   return mergedArray;
 };
 const startsWithRomanNumeral = (str) => {
@@ -179,7 +182,7 @@ const startsWithRomanNumeral = (str) => {
   //   /^(?:[ivxlcdm]+\s*|[a-z]+\s*|\d+\s*|\d+\.\s*|[ivxlcdm]+\.\s*|[a-z]+\.\s*)/i;
   const regex = /^[a-z\d]+\.\s*.*$/i;
   // const regex2 = /^(?:(?:[ivxlcdm]+|[a-zA-Z]+|\d+)\s*)/i;
-  return regex.test(str);
+  return regex.test(str) && !isFillInTheBlanksDirection(str);
 };
 
 const getNumberedList = (data) => {
@@ -401,7 +404,6 @@ function shuffleArray(array) {
 }
 
 function addDirectionsToEachQuestion(questions, directions) {
-  console.log(questions);
   const questionsWithDirections = [];
 
   if (directions?.length === 0) {
@@ -442,11 +444,11 @@ function addDirectionsToEachQuestion(questions, directions) {
 }
 
 function getProvidedAnswers(directionIndex, questionIndex, data) {
+  console.log(directionIndex, questionIndex, data);
   const refinedDirectionIndexes = closestDIrectionIndexToQuestion(
     directionIndex,
     questionIndex
   );
-  console.log(data, refinedDirectionIndexes, questionIndex);
   return data
     .filter(
       (record) =>
