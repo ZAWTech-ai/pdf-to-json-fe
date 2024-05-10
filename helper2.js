@@ -275,6 +275,7 @@ function removeDuplicates(array, property) {
   });
 }
 const getFilteredAnswers = (question, answers) => {
+  console.log(question, answers);
   if (Array.isArray(question.y)) {
     return question.y.flatMap((yValue) =>
       filterAnswersForY(question, answers, yValue)
@@ -287,7 +288,7 @@ const getFilteredAnswers = (question, answers) => {
 const filterAnswersForY = (question, answers, yValue) => {
   const maxY = parseFloat(yValue) + ANSWER_TOLLERANCE;
   const minY = parseFloat(yValue) - ANSWER_TOLLERANCE;
-
+  console.log(answers);
   return answers
     .filter(
       (answer) =>
@@ -404,6 +405,7 @@ function shuffleArray(array) {
 }
 
 function addDirectionsToEachQuestion(questions, directions) {
+  console.log(questions);
   const questionsWithDirections = [];
 
   if (directions?.length === 0) {

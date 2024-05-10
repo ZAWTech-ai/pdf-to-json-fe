@@ -30,11 +30,18 @@ function render_questions(raw) {
     if (questions.length === 0) {
       return []; // or whatever value you want to skip it
     }
+    console.log(answers);
     const answerByPage = answers?.filter(
       (page) => page[0]?.page === questions[0].page
     );
-    return addAnswersToEachQuestion(questions, answerByPage[0], index);
+    if (!answerByPage || answerByPage.length === 0) {
+      // Handle case where no answers are found for the page
+      return addAnswersToEachQuestion(questions, [], index);
+    }
+    let answersForPages = answerByPage[0]; // You missed a closing bracket here
+    return addAnswersToEachQuestion(questions, answersForPages, index);
   });
+
   const providedAnswers = splitQuestionByDirections.map((page, index) => {
     // Check if finalQuestions[index][0] exists before accessing its properties
     const question = finalQuestions[index][0];
